@@ -3,73 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 세계 여행 아카이브</title>
+    <title>나의 여정 아카이브 | 블로그형 기록장</title>
     <style>
-        /* 기본 스타일 및 프리텐다드 폰트 적용 */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #f1f5f9; color: #1e293b; padding: 30px 15px; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        /* 기본 스타일 및 웹폰트 */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background-color: #f8fafc; color: #334155; padding: 30px 15px; }
+        .container { max-width: 1000px; margin: 0 auto; }
 
-        /* 헤더 스타일 */
-        header { text-align: center; margin-bottom: 35px; }
-        header h1 { font-size: 2.4rem; color: #0f172a; margin-bottom: 8px; font-weight: 800; }
-        header p { color: #64748b; font-size: 1rem; }
+        /* 블로그 타이틀 헤더 */
+        header { text-align: center; margin-bottom: 40px; padding: 20px 0; border-bottom: 2px solid #e2e8f0; }
+        header h1 { font-size: 2.4rem; color: #0f172a; font-weight: 800; letter-spacing: -0.02em; }
+        header p { color: #64748b; margin-top: 8px; font-size: 1.05rem; }
 
-        /* 상단 네비게이션 / 필터 바 */
+        /* 블로그형 상세 검색 필터 바 */
         .filter-section {
             background: #ffffff;
-            padding: 20px;
-            border-radius: 14px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            margin-bottom: 35px;
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
+            border: 1px solid #e2e8f0;
         }
-        .filter-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
-        .filter-group label { font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 150px; }
+        .filter-group label { font-size: 0.8rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; }
         .filter-group select {
-            padding: 10px 12px;
+            padding: 12px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             background-color: #fff;
             font-size: 0.95rem;
-            outline: none;
             color: #334155;
+            outline: none;
             cursor: pointer;
+            transition: border-color 0.2s;
         }
+        .filter-group select:focus { border-color: #3b82f6; }
 
-        /* 여행 기록 카드 그리드 레이아웃 */
+        /* 블로그 스타일 글 목록 그리드 */
         .record-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
         }
-        .card {
+        .blog-card {
             background: #ffffff;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
-            border: 1px solid #e2e8f0;
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
-        .card:hover { transform: translateY(-4px); }
+        .blog-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.06); }
 
-        /* 📸 핵심 기능: 다중 이미지 터치/클릭 슬라이더 CSS */
+        /* 다중 이미지 슬라이더 영역 */
         .image-slider {
             position: relative;
             width: 100%;
-            height: 210px;
-            background-color: #cbd5e1;
+            height: 230px;
+            background-color: #f1f5f9;
             overflow: hidden;
         }
         .slider-wrapper {
             display: flex;
             width: 100%;
             height: 100%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .slider-wrapper img {
             width: 100%;
@@ -81,23 +84,22 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             border: none;
             width: 34px;
             height: 34px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
         }
-        .slider-btn:hover { background: #ffffff; }
-        .slider-btn.prev { left: 10px; }
-        .slider-btn.next { right: 10px; }
+        .slider-btn.prev { left: 12px; }
+        .slider-btn.next { right: 12px; }
         
         .image-counter {
             position: absolute;
@@ -105,51 +107,55 @@
             right: 12px;
             background: rgba(15, 23, 42, 0.75);
             color: #ffffff;
-            padding: 3px 9px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
 
-        /* 카드 텍스트 정보 스타일 */
-        .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        /* 블로그 내용 본문 스타일 */
+        .card-body { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
         
         .badge {
             align-self: flex-start;
-            padding: 4px 9px;
+            padding: 4px 10px;
             border-radius: 6px;
             font-size: 0.75rem;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
         .badge.식당 { background-color: #fee2e2; color: #991b1b; }
         .badge.숙소 { background-color: #fef9c3; color: #854d0e; }
         .badge.명소 { background-color: #dcfce7; color: #166534; }
 
-        .card-title { font-size: 1.25rem; color: #0f172a; font-weight: 700; margin-bottom: 4px; }
-        .card-location { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; font-weight: 500; }
-        .card-review { font-size: 0.95rem; color: #334155; line-height: 1.55; flex-grow: 1; }
+        .card-title { font-size: 1.35rem; color: #0f172a; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+        
+        /* 🗺️ 국가 / 도 / 시 분리 경로 태그 구조 */
+        .card-breadcrumbs { font-size: 0.82rem; color: #3b82f6; font-weight: 600; margin-bottom: 14px; display: flex; gap: 4px; align-items: center; }
+        .card-breadcrumbs span { background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+
+        .card-review { font-size: 0.95rem; color: #475569; line-height: 1.6; flex-grow: 1; text-align: justify; }
         
         .card-footer {
-            margin-top: 15px;
-            padding-top: 12px;
+            margin-top: 20px;
+            padding-top: 14px;
             border-top: 1px solid #f1f5f9;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .card-stars { color: #f59e0b; font-size: 0.9rem; }
-        .card-date { font-size: 0.8rem; color: #94a3b8; }
+        .card-stars { color: #f59e0b; font-size: 0.95rem; }
+        .card-date { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
 
-        .no-data { grid-column: 1/-1; text-align: center; color: #64748b; padding: 50px 0; font-size: 1rem; }
+        .no-data { grid-column: 1/-1; text-align: center; color: #64748b; padding: 60px 0; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>✈️ Travel Storage</h1>
-        <p>기억하고 싶은 세계 각지의 맛집, 숙소, 관광명소</p>
+        <h1>📝 My Travel Log</h1>
+        <p>전 세계 방방곡곡 맛집, 숙소, 명소들을 기록하는 개인 블로그</p>
     </header>
 
     <div class="filter-section">
@@ -159,23 +165,30 @@
                 <option value="all">전체 국가</option>
                 <option value="한국">한국 🇰🇷</option>
                 <option value="일본">일본 🇯🇵</option>
-                <option value="프랑스">프랑스 🇫🇷</option>
             </select>
         </div>
         <div class="filter-group">
-            <label>지역 (Region)</label>
-            <select id="filter-region" onchange="filterData()">
-                <option value="all">전체 지역</option>
-                <option value="부산">부산</option>
-                <option value="도쿄">도쿄</option>
-                <option value="오사카">오사카</option>
-                <option value="파리">파리</option>
+            <label>도 / 광역시 (State/Province)</label>
+            <select id="filter-state" onchange="filterData()">
+                <option value="all">전체 지역(도)</option>
+                <option value="경기도">경기도</option>
+                <option value="부산광역시">부산광역시</option>
+                <option value="도쿄도">도쿄도</option>
             </select>
         </div>
         <div class="filter-group">
-            <label>종류 (Category)</label>
+            <label>시 / 군 / 구 (City)</label>
+            <select id="filter-city" onchange="filterData()">
+                <option value="all">전체 세부도시</option>
+                <option value="포천시">포천시</option>
+                <option value="수영구">수영구</option>
+                <option value="신주쿠구">신주쿠구</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>카테고리</label>
             <select id="filter-category" onchange="filterData()">
-                <option value="all">전체 카테고리</option>
+                <option value="all">전체 종류</option>
                 <option value="식당">음식점 🍕</option>
                 <option value="숙소">숙박업소 🏨</option>
                 <option value="명소">관광명소 🎡</option>
@@ -187,64 +200,64 @@
 </div>
 
 <script>
-    // 📝 [데이터 보관소] 여기에 다녀온 여행지 정보를 배열 형태로 추가/편집하면 됩니다.
+    // 📝 [블로그 데이터 기입장]
+    // 국가(country), 도/광역시(state), 시/군/구(city)를 자유롭게 텍스트로 적어 넣으시면 됩니다.
     const travelData = [
         {
             id: 1,
-            country: "일본",
-            region: "도쿄",
-            category: "식당",
-            name: "신주쿠 타츠노야",
-            location: "도쿄 신주쿠구",
-            date: "2026.04.12",
-            // 📸 이미지 주소를 배열로 쉼표로 구분해서 여러 장 넣으시면 슬라이더가 작동합니다.
+            category: "명소",
+            name: "포천 아트밸리",
+            // ⭐️ 요청하신 대로 지역 데이터를 단계별로 세분화했습니다.
+            country: "한국",
+            state: "경기도",
+            city: "포천시",
+            date: "2026.05.22",
+            // 📸 원하는 만큼 이미지 주소를 넣을 수 있습니다.
             images: [
-                "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600",
-                "https://images.unsplash.com/photo-1557872943-16a5ac26437e?w=600",
-                "https://images.unsplash.com/photo-1618411640018-97108d48db74?w=600"
+                "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600",
+                "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600"
             ],
-            review: "곱창 진액 베이스의 츠케멘이 일품입니다. 면을 완전히 소스에 적셔 먹은 뒤 마무리로 남은 국물에 밥이나 죽을 끓여달라고 꼭 요청하세요.",
+            review: "버려진 채석장을 친환경 문화예술 공간으로 재탄생시킨 곳입니다. 에메랄드빛 호수와 화강암 절벽의 조화가 무척 아름다우며, 모노레일을 타고 편하게 올라갈 수 있어 가족 여행지로 안성맞춤입니다.",
             stars: "⭐⭐⭐⭐⭐"
         },
         {
             id: 2,
-            country: "한국",
-            region: "부산",
-            category: "명소",
-            name: "광안리 해수욕장",
-            location: "부산 수영구 민락동",
-            date: "2026.05.01",
+            category: "식당",
+            name: "신주쿠 타츠노야 츠케멘",
+            country: "일본",
+            state: "도쿄도",
+            city: "신주쿠구",
+            date: "2026.04.12",
             images: [
-                "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600",
-                "https://images.unsplash.com/photo-1624233772274-a744cb89d977?w=600"
+                "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600",
+                "https://images.unsplash.com/photo-1618411640018-97108d48db74?w=600"
             ],
-            review: "밤바다를 가로지르는 광안대교 다리 야경이 훌륭합니다. 주말 밤에 맞춰 가면 하늘에서 펼쳐지는 멋진 드론쇼를 백사장에서 직관할 수 있습니다.",
+            review: "진한 곱창 소스에 면을 찍어 먹는 독특한 츠케멘 맛집입니다. 면을 다 먹은 후에 소스 그릇을 건네며 죽(카유)을 만들어 달라고 하면 고소하게 끓여주는데 이게 화룡점정입니다.",
             stars: "⭐⭐⭐⭐⭐"
         },
         {
             id: 3,
-            country: "프랑스",
-            region: "파리",
-            category: "숙소",
-            name: "풀만 파리 에펠 타워",
-            location: "프랑스 파리 15구",
-            date: "2026.02.15",
+            category: "명소",
+            name: "광안리 해수욕장",
+            country: "한국",
+            state: "부산광역시",
+            city: "수영구",
+            date: "2026.05.01",
             images: [
-                "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600"
+                "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600"
             ],
-            review: "방 안 테라스에서 에펠탑이 정면으로 쏟아지는 극강의 인스타 뷰 숙소. 매 정각 화려하게 반짝이는 에펠탑 쇼를 누워서 편안하게 관람 가능.",
+            review: "밤에 켜지는 광안대교 다리의 조명 야경이 아주 낭만적입니다. 매주 토요일 저녁 해변가에서 진행되는 대형 드론 라이트쇼는 놓치지 말고 꼭 감상해야 할 필수 코스입니다.",
             stars: "⭐⭐⭐⭐⭐"
         }
     ];
 
-    // 슬라이더 전역 상태 관리
+    // 슬라이더 제어 로직 함수
     const sliderStates = {};
 
     function initSlider(id, max) {
         sliderStates[id] = { current: 0, max: max };
     }
 
-    // 이미지 좌우 이동 엔진 함수
     function changeSlide(id, step) {
         const state = sliderStates[id];
         if (!state) return;
@@ -260,13 +273,13 @@
         counter.textContent = `${state.current + 1} / ${state.max + 1}`;
     }
 
-    // 화면에 카드를 동적으로 렌더링하는 함수
-    function renderCards(data) {
+    // 카드 출력 렌더링 시스템
+    function renderBlogCards(data) {
         const grid = document.getElementById('record-grid');
         grid.innerHTML = '';
 
         if(data.length === 0) {
-            grid.innerHTML = `<div class="no-data">🔍 등록된 조건의 여행 기록을 찾을 수 없습니다.</div>`;
+            grid.innerHTML = `<div class="no-data">🔍 검색 조건에 맞는 블로그 글이 존재하지 않습니다.</div>`;
             return;
         }
 
@@ -275,7 +288,7 @@
             if (imgLen > 0) initSlider(item.id, imgLen - 1);
 
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = 'blog-card';
             
             let imgBlock = '';
             if (imgLen > 0) {
@@ -298,7 +311,9 @@
                 <div class="card-body">
                     <span class="badge ${item.category}">${item.category}</span>
                     <h3 class="card-title">${item.name}</h3>
-                    <div class="card-location">📍 ${item.country} · ${item.region} (${item.location})</div>
+                    <div class="card-breadcrumbs">
+                        <span>${item.country}</span> &gt; <span>${item.state}</span> &gt; <span>${item.city}</span>
+                    </div>
                     <p class="card-review">${item.review}</p>
                     <div class="card-footer">
                         <div class="card-stars">${item.stars}</div>
@@ -310,25 +325,28 @@
         });
     }
 
-    // 필터 연동 감지 장치
+    // 네 단계의 조건부 필터링 엔진
     function filterData() {
         const country = document.getElementById('filter-country').value;
-        const region = document.getElementById('filter-region').value;
+        const state = document.getElementById('filter-state').value;
+        const city = document.getElementById('filter-city').value;
         const category = document.getElementById('filter-category').value;
 
         const filtered = travelData.filter(item => {
-            const cCheck = (country === 'all' || item.country === country);
-            const rCheck = (region === 'all' || item.region === region);
-            const catCheck = (category === 'all' || item.category === category);
-            return cCheck && rCheck && catCheck;
+            const countryMatch = (country === 'all' || item.country === country);
+            const stateMatch = (state === 'all' || item.state === state);
+            const cityMatch = (city === 'all' || item.city === city);
+            const categoryMatch = (category === 'all' || item.category === category);
+            
+            return countryMatch && stateMatch && cityMatch && categoryMatch;
         });
 
-        renderCards(filtered);
+        renderBlogCards(filtered);
     }
 
-    // 초기 실행
+    // 페이지 진입 초기 로딩
     window.onload = function() {
-        renderCards(travelData);
+        renderBlogCards(travelData);
     };
 </script>
 

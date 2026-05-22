@@ -3,350 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 여정 아카이브 | 블로그형 기록장</title>
+    <title>나의 여행 아카이브 블로그</title>
     <style>
-        /* 기본 스타일 및 웹폰트 */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        body { background-color: #f8fafc; color: #334155; padding: 30px 15px; }
-        .container { max-width: 1000px; margin: 0 auto; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #334155; padding-bottom: 60px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
 
-        /* 블로그 타이틀 헤더 */
-        header { text-align: center; margin-bottom: 40px; padding: 20px 0; border-bottom: 2px solid #e2e8f0; }
-        header h1 { font-size: 2.4rem; color: #0f172a; font-weight: 800; letter-spacing: -0.02em; }
-        header p { color: #64748b; margin-top: 8px; font-size: 1.05rem; }
+        /* 탭 메인 메뉴 바 (2페이지 전환용) */
+        .nav-tabs { display: flex; background: #ffffff; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; sticky: top; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .tab-btn { flex: 1; padding: 18px; text-align: center; background: none; border: none; font-size: 1.05rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: #f8fafc; }
 
-        /* 블로그형 상세 검색 필터 바 */
-        .filter-section {
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            margin-bottom: 35px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            border: 1px solid #e2e8f0;
-        }
-        .filter-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 150px; }
-        .filter-group label { font-size: 0.8rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; }
-        .filter-group select {
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background-color: #fff;
-            font-size: 0.95rem;
-            color: #334155;
-            outline: none;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .filter-group select:focus { border-color: #3b82f6; }
+        .page { display: none; }
+        .page.active { display: block; }
 
-        /* 블로그 스타일 글 목록 그리드 */
-        .record-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-        }
-        .blog-card {
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .blog-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.06); }
-
-        /* 다중 이미지 슬라이더 영역 */
-        .image-slider {
-            position: relative;
-            width: 100%;
-            height: 230px;
-            background-color: #f1f5f9;
-            overflow: hidden;
-        }
-        .slider-wrapper {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .slider-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-        .slider-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-        .slider-btn.prev { left: 12px; }
-        .slider-btn.next { right: 12px; }
+        /* 1페이지: 글 작성 폼 스타일 */
+        .write-box { background: #ffffff; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+        .form-title { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 20px; border-left: 4px solid #3b82f6; padding-left: 10px; }
+        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group.row { flex-direction: row; gap: 10px; }
+        .form-group.row .col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         
-        .image-counter {
-            position: absolute;
-            bottom: 12px;
-            right: 12px;
-            background: rgba(15, 23, 42, 0.75);
-            color: #ffffff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        /* 블로그 내용 본문 스타일 */
-        .card-body { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; }
+        label { font-size: 0.85rem; font-weight: 700; color: #475569; }
+        input[type="text"], select, textarea { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; transition: border 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
+        textarea { resize: vertical; min-height: 120px; }
         
-        .badge {
-            align-self: flex-start;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 14px;
-        }
-        .badge.식당 { background-color: #fee2e2; color: #991b1b; }
-        .badge.숙소 { background-color: #fef9c3; color: #854d0e; }
-        .badge.명소 { background-color: #dcfce7; color: #166534; }
+        input[type="file"] { padding: 10px; background: #f1f5f9; border-radius: 8px; border: 1px dashed #cbd5e1; cursor: pointer; }
 
-        .card-title { font-size: 1.35rem; color: #0f172a; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+        .submit-btn { background: #3b82f6; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .submit-btn:hover { background: #2563eb; }
+
+        /* 2페이지: 검색 및 블로그 피드 스타일 */
+        .search-box { background: #ffffff; padding: 20px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-box input { flex: 2; min-width: 200px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        .search-box select { flex: 1; min-width: 120px; }
+
+        .blog-feed { display: flex; flex-direction: column; gap: 25px; }
+        .blog-post { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
         
-        /* 🗺️ 국가 / 도 / 시 분리 경로 태그 구조 */
-        .card-breadcrumbs { font-size: 0.82rem; color: #3b82f6; font-weight: 600; margin-bottom: 14px; display: flex; gap: 4px; align-items: center; }
-        .card-breadcrumbs span { background: #eff6ff; padding: 2px 6px; border-radius: 4px; }
+        /* 다중 이미지 슬라이더 구조 */
+        .slider-container { position: relative; width: 100%; height: 300px; background: #e2e8f0; overflow: hidden; }
+        .slider-wrap { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-in-out; }
+        .slider-wrap img { width: 100%; height: 100%; object-fit: cover; flex-shrink: 0; }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.85); border: none; width: 36px; height: 36px; border-radius: 50%; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
+        .nav-btn.prev { left: 15px; }
+        .nav-btn.next { right: 15px; }
+        .img-counter { position: absolute; bottom: 15px; right: 15px; background: rgba(15,23,42,0.75); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; }
 
-        .card-review { font-size: 0.95rem; color: #475569; line-height: 1.6; flex-grow: 1; text-align: justify; }
+        .post-body { padding: 24px; }
+        .post-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-bottom: 12px; }
+        .post-tag.식당 { background: #fee2e2; color: #991b1b; }
+        .post-tag.숙소 { background: #fef9c3; color: #854d0e; }
+        .post-tag.명소 { background: #dcfce7; color: #166534; }
+
+        .post-title { font-size: 1.4rem; color: #0f172a; font-weight: 800; margin-bottom: 6px; }
+        .post-geo { font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-bottom: 15px; }
+        .post-content { font-size: 0.98rem; color: #475569; line-height: 1.6; white-space: pre-wrap; margin-bottom: 15px; text-align: justify; }
+        .post-footer { display: flex; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 0.85rem; color: #94a3b8; }
+        .post-stars { color: #f59e0b; font-weight: bold; }
         
-        .card-footer {
-            margin-top: 20px;
-            padding-top: 14px;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .card-stars { color: #f59e0b; font-size: 0.95rem; }
-        .card-date { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
-
-        .no-data { grid-column: 1/-1; text-align: center; color: #64748b; padding: 60px 0; font-size: 1.1rem; }
+        .empty-message { text-align: center; padding: 60px 0; color: #94a3b8; font-size: 1rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>📝 My Travel Log</h1>
-        <p>전 세계 방방곡곡 맛집, 숙소, 명소들을 기록하는 개인 블로그</p>
-    </header>
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchPage('write-page')">✏️ 새 여정 기록하기 (1P)</button>
+        <button class="tab-btn" onclick="switchPage('feed-page')">🔍 내 블로그 피드 & 검색 (2P)</button>
+    </nav>
 
-    <div class="filter-section">
-        <div class="filter-group">
-            <label>국가 (Country)</label>
-            <select id="filter-country" onchange="filterData()">
-                <option value="all">전체 국가</option>
-                <option value="한국">한국 🇰🇷</option>
-                <option value="일본">일본 🇯🇵</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>도 / 광역시 (State/Province)</label>
-            <select id="filter-state" onchange="filterData()">
-                <option value="all">전체 지역(도)</option>
-                <option value="경기도">경기도</option>
-                <option value="부산광역시">부산광역시</option>
-                <option value="도쿄도">도쿄도</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>시 / 군 / 구 (City)</label>
-            <select id="filter-city" onchange="filterData()">
-                <option value="all">전체 세부도시</option>
-                <option value="포천시">포천시</option>
-                <option value="수영구">수영구</option>
-                <option value="신주쿠구">신주쿠구</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>카테고리</label>
-            <select id="filter-category" onchange="filterData()">
-                <option value="all">전체 종류</option>
-                <option value="식당">음식점 🍕</option>
-                <option value="숙소">숙박업소 🏨</option>
-                <option value="명소">관광명소 🎡</option>
-            </select>
+    <div id="write-page" class="page active">
+        <div class="write-box">
+            <h2 class="form-title">새로운 여행 조각 기록</h2>
+            
+            <div class="form-group row">
+                <div class="col">
+                    <label>국가 이름 직접 기입</label>
+                    <input type="text" id="in-country" placeholder="예: 한국, 일본, 프랑스">
+                </div>
+                <div class="col">
+                    <label>카테고리</label>
+                    <select id="in-category">
+                        <option value="식당">🍕 음식점</option>
+                        <option value="숙소">🏨 숙박업소</option>
+                        <option value="명소">🎡 관광명소</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <div class="col">
+                    <label>도 / 광역시 직접 기입</label>
+                    <input type="text" id="in-state" placeholder="예: 경기도, 부산광역시, 도쿄도">
+                </div>
+                <div class="col">
+                    <label>시 / 군 / 구 직접 기입</label>
+                    <input type="text" id="in-city" placeholder="예: 포천시, 수영구, 신주쿠구">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>장소 명칭 (글 제목)</label>
+                <input type="text" id="in-name" placeholder="예: 포천 아트밸리, 신주쿠 타츠노야">
+            </div>
+
+            <div class="form-group">
+                <label>📸 사진 첨부 (여러 장 선택 가능)</label>
+                <input type="file" id="in-images" multiple accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label>평점</label>
+                <select id="in-stars">
+                    <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐ (최고)</option>
+                    <option value="⭐⭐⭐⭐">⭐⭐⭐⭐ (좋음)</option>
+                    <option value="⭐⭐⭐">⭐⭐⭐ (보통)</option>
+                    <option value="⭐⭐">⭐⭐ (별로)</option>
+                    <option value="⭐">⭐ (최악)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>여행 내용 및 후기</label>
+                <textarea id="in-review" placeholder="다녀온 곳의 생생한 기억을 블로그 일기처럼 남겨보세요."></textarea>
+            </div>
+
+            <button class="submit-btn" onclick="savePost()">✨ 내 블로그에 포스팅하기</button>
         </div>
     </div>
 
-    <div class="record-grid" id="record-grid"></div>
+    <div id="feed-page" class="page">
+        <div class="search-box">
+            <input type="text" id="search-keyword" oninput="searchPosts()" placeholder="국가, 지역, 도시, 제목 등으로 실시간 검색...">
+            <select id="search-category" onchange="searchPosts()">
+                <option value="all">전체 종류</option>
+                <option value="식당">🍕 음식점</option>
+                <option value="숙소">🏨 숙박업소</option>
+                <option value="명소">🎡 관광명소</option>
+            </select>
+        </div>
+
+        <div class="blog-feed" id="blog-feed"></div>
+    </div>
 </div>
 
 <script>
-    // 📝 [블로그 데이터 기입장]
-    // 국가(country), 도/광역시(state), 시/군/구(city)를 자유롭게 텍스트로 적어 넣으시면 됩니다.
-    const travelData = [
+    // 게시글 데이터 배열 저장 장치 (기본 초기 예시 포함)
+    let myBlogData = JSON.parse(localStorage.getItem('myBlogData')) || [
         {
-            id: 1,
-            category: "명소",
-            name: "포천 아트밸리",
-            // ⭐️ 요청하신 대로 지역 데이터를 단계별로 세분화했습니다.
+            id: Date.now(),
             country: "한국",
             state: "경기도",
             city: "포천시",
-            date: "2026.05.22",
-            // 📸 원하는 만큼 이미지 주소를 넣을 수 있습니다.
-            images: [
-                "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600",
-                "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600"
-            ],
-            review: "버려진 채석장을 친환경 문화예술 공간으로 재탄생시킨 곳입니다. 에메랄드빛 호수와 화강암 절벽의 조화가 무척 아름다우며, 모노레일을 타고 편하게 올라갈 수 있어 가족 여행지로 안성맞춤입니다.",
-            stars: "⭐⭐⭐⭐⭐"
-        },
-        {
-            id: 2,
-            category: "식당",
-            name: "신주쿠 타츠노야 츠케멘",
-            country: "일본",
-            state: "도쿄도",
-            city: "신주쿠구",
-            date: "2026.04.12",
-            images: [
-                "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600",
-                "https://images.unsplash.com/photo-1618411640018-97108d48db74?w=600"
-            ],
-            review: "진한 곱창 소스에 면을 찍어 먹는 독특한 츠케멘 맛집입니다. 면을 다 먹은 후에 소스 그릇을 건네며 죽(카유)을 만들어 달라고 하면 고소하게 끓여주는데 이게 화룡점정입니다.",
-            stars: "⭐⭐⭐⭐⭐"
-        },
-        {
-            id: 3,
             category: "명소",
-            name: "광안리 해수욕장",
-            country: "한국",
-            state: "부산광역시",
-            city: "수영구",
-            date: "2026.05.01",
-            images: [
-                "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600"
-            ],
-            review: "밤에 켜지는 광안대교 다리의 조명 야경이 아주 낭만적입니다. 매주 토요일 저녁 해변가에서 진행되는 대형 드론 라이트쇼는 놓치지 말고 꼭 감상해야 할 필수 코스입니다.",
-            stars: "⭐⭐⭐⭐⭐"
+            name: "포천 아트밸리 호수",
+            stars: "⭐⭐⭐⭐⭐",
+            review: "과거 채석장이었던 곳을 문화공간으로 탈바꿈한 명소입니다. 에메랄드빛 호수와 가파른 수직 절벽의 절경이 가히 압권입니다. 모노레일이 있어 이동이 편안합니다.",
+            date: "2026.05.22",
+            images: ["https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800"]
         }
     ];
 
-    // 슬라이더 제어 로직 함수
-    const sliderStates = {};
-
-    function initSlider(id, max) {
-        sliderStates[id] = { current: 0, max: max };
-    }
-
-    function changeSlide(id, step) {
-        const state = sliderStates[id];
-        if (!state) return;
-
-        state.current += step;
-        if (state.current < 0) state.current = state.max;
-        if (state.current > state.max) state.current = 0;
-
-        const wrapper = document.getElementById(`slider-wrap-${id}`);
-        const counter = document.getElementById(`counter-${id}`);
+    // 페이지(탭) 토글 엔진
+    function switchPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         
-        wrapper.style.transform = `translateX(-${state.current * 100}%)`;
-        counter.textContent = `${state.current + 1} / ${state.max + 1}`;
+        document.getElementById(pageId).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if(pageId === 'feed-page') { searchPosts(); }
     }
 
-    // 카드 출력 렌더링 시스템
-    function renderBlogCards(data) {
-        const grid = document.getElementById('record-grid');
-        grid.innerHTML = '';
+    // 📸 첨부된 이미지를 웹 브라우저용 데이터(Base64)로 압축 변환하는 유틸리티
+    function convertImages(fileInput) {
+        return new Promise((resolve) => {
+            const files = fileInput.files;
+            if (files.length === 0) return resolve([]);
+            
+            const base64Images = [];
+            let loadedCount = 0;
 
-        if(data.length === 0) {
-            grid.innerHTML = `<div class="no-data">🔍 검색 조건에 맞는 블로그 글이 존재하지 않습니다.</div>`;
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64Images.push(e.target.result);
+                    loadedCount++;
+                    if (loadedCount === files.length) resolve(base64Images);
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        });
+    }
+
+    // ✏️ 작성 완료 후 글 저장 프로세스
+    async function savePost() {
+        const country = document.getElementById('in-country').value.trim();
+        const state = document.getElementById('in-state').value.trim();
+        const city = document.getElementById('in-city').value.trim();
+        const name = document.getElementById('in-name').value.trim();
+        const category = document.getElementById('in-category').value;
+        const stars = document.getElementById('in-stars').value;
+        const review = document.getElementById('in-review').value.trim();
+        const fileInput = document.getElementById('in-images');
+
+        if(!country || !state || !city || !name || !review) {
+            alert("모든 입력란(국가, 도, 시, 장소명, 후기)을 입력해주세요!");
             return;
         }
 
-        data.forEach(item => {
-            const imgLen = item.images ? item.images.length : 0;
-            if (imgLen > 0) initSlider(item.id, imgLen - 1);
+        // 이미지 변환 대기 처리
+        const imgArray = await convertImages(fileInput);
+        
+        const today = new Date();
+        const dateString = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
 
-            const card = document.createElement('div');
-            card.className = 'blog-card';
-            
-            let imgBlock = '';
-            if (imgLen > 0) {
-                imgBlock = `
-                    <div class="image-slider">
-                        <div class="slider-wrapper" id="slider-wrap-${item.id}">
-                            ${item.images.map(src => `<img src="${src}" alt="${item.name}">`).join('')}
-                        </div>
-                        ${imgLen > 1 ? `
-                            <button class="slider-btn prev" onclick="changeSlide(${item.id}, -1)">‹</button>
-                            <button class="slider-btn next" onclick="changeSlide(${item.id}, 1)">›</button>
-                            <div class="image-counter" id="counter-${item.id}">1 / ${imgLen}</div>
-                        ` : ''}
-                    </div>
-                `;
-            }
+        const newPost = {
+            id: Date.now(),
+            country, state, city, category, name, stars, review,
+            date: dateString,
+            images: imgArray.length > 0 ? imgArray : ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"] // 기본 이미지
+        };
 
-            card.innerHTML = `
-                ${imgBlock}
-                <div class="card-body">
-                    <span class="badge ${item.category}">${item.category}</span>
-                    <h3 class="card-title">${item.name}</h3>
-                    <div class="card-breadcrumbs">
-                        <span>${item.country}</span> &gt; <span>${item.state}</span> &gt; <span>${item.city}</span>
+        myBlogData.unshift(newPost); // 최신글 상단 배치
+        localStorage.setItem('myBlogData', JSON.stringify(myBlogData)); // 영구 저장
+
+        // 인풋창 초기화
+        document.getElementById('in-country').value = '';
+        document.getElementById('in-state').value = '';
+        document.getElementById('in-city').value = '';
+        document.getElementById('in-name').value = '';
+        document.getElementById('in-review').value = '';
+        fileInput.value = '';
+
+        alert("🎉 나만의 여행 블로그에 성공적으로 포스팅되었습니다!");
+        
+        // 피드 페이지로 자동 전환 및 갱신
+        const feedTab = document.querySelectorAll('.tab-btn')[1];
+        feedTab.click();
+    }
+
+    // 📸 슬라이더 구동 모듈
+    const currentSliders = {};
+    function slide(postId, idx, max) {
+        if(idx < 0) idx = max;
+        if(idx > max) idx = 0;
+        currentSliders[postId] = idx;
+
+        document.getElementById(`wrap-${postId}`).style.transform = `translateX(-${idx * 100}%)`;
+        document.getElementById(`count-${postId}`).textContent = `${idx + 1} / ${max + 1}`;
+    }
+
+    // 🔍 2페이지: 실시간 필터 및 검색 모듈
+    function searchPosts() {
+        const keyword = document.getElementById('search-keyword').value.toLowerCase();
+        const category = document.getElementById('search-category').value;
+        const feed = document.getElementById('blog-feed');
+        feed.innerHTML = '';
+
+        const filtered = myBlogData.filter(item => {
+            const catMatch = (category === 'all' || item.category === category);
+            const textMatch = (
+                item.country.toLowerCase().includes(keyword) ||
+                item.state.toLowerCase().includes(keyword) ||
+                item.city.toLowerCase().includes(keyword) ||
+                item.name.toLowerCase().includes(keyword) ||
+                item.review.toLowerCase().includes(keyword)
+            );
+            return catMatch && textMatch;
+        });
+
+        if(filtered.length === 0) {
+            feed.innerHTML = `<div class="empty-message">🔍 검색 조건에 맞는 글이 하나도 없습니다. 첫 글을 작성해 보세요!</div>`;
+            return;
+        }
+
+        filtered.forEach(post => {
+            currentSliders[post.id] = 0;
+            const maxIdx = post.images.length - 1;
+
+            const article = document.createElement('article');
+            article.className = 'blog-post';
+            article.innerHTML = `
+                <div class="slider-container">
+                    <div class="slider-wrap" id="wrap-${post.id}">
+                        ${post.images.map(img => `<img src="${img}" alt="travel">`).join('')}
                     </div>
-                    <p class="card-review">${item.review}</p>
-                    <div class="card-footer">
-                        <div class="card-stars">${item.stars}</div>
-                        <div class="card-date">${item.date}</div>
+                    ${maxIdx > 0 ? `
+                        <button class="nav-btn prev" onclick="slide(${post.id}, currentSliders[post.id]-1, ${maxIdx})">‹</button>
+                        <button class="nav-btn next" onclick="slide(${post.id}, currentSliders[post.id]+1, ${maxIdx})">›</button>
+                        <div class="img-counter" id="count-${post.id}">1 / ${maxIdx + 1}</div>
+                    ` : ''}
+                </div>
+                <div class="post-body">
+                    <span class="post-tag ${post.category}">${post.category}</span>
+                    <h3 class="post-title">${post.name}</h3>
+                    <div class="post-geo">🗺️ ${post.country} ＞ ${post.state} ＞ ${post.city}</div>
+                    <p class="post-content">${post.review}</p>
+                    <div class="post-footer">
+                        <span class="post-stars">${post.stars}</span>
+                        <span class="post-date">📅 ${post.date}</span>
                     </div>
                 </div>
             `;
-            grid.appendChild(card);
+            feed.appendChild(article);
         });
     }
 
-    // 네 단계의 조건부 필터링 엔진
-    function filterData() {
-        const country = document.getElementById('filter-country').value;
-        const state = document.getElementById('filter-state').value;
-        const city = document.getElementById('filter-city').value;
-        const category = document.getElementById('filter-category').value;
-
-        const filtered = travelData.filter(item => {
-            const countryMatch = (country === 'all' || item.country === country);
-            const stateMatch = (state === 'all' || item.state === state);
-            const cityMatch = (city === 'all' || item.city === city);
-            const categoryMatch = (category === 'all' || item.category === category);
-            
-            return countryMatch && stateMatch && cityMatch && categoryMatch;
-        });
-
-        renderBlogCards(filtered);
-    }
-
-    // 페이지 진입 초기 로딩
+    // 초기 화면 로딩 시 2페이지 세팅 로드
     window.onload = function() {
-        renderBlogCards(travelData);
+        searchPosts();
     };
 </script>
 

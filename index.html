@@ -18,7 +18,7 @@
                 ✈️ 나의 여행 다이어리
             </h1>
             <div class="w-full sm:w-80 relative">
-                <input type="text" id="search-input" placeholder="어디로 떠나셨나요? (국가, 도시 검색)" class="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm">
+                <input type="text" id="search-input" placeholder="국가, 도시, 카테고리 검색..." class="w-full pl-4 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm">
                 <span class="absolute right-3 top-2.5 text-slate-400 text-sm">🔍</span>
             </div>
         </div>
@@ -33,37 +33,51 @@
             </div>
             
             <div class="space-y-5">
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-2">위치 정보</label>
-                    <div class="grid grid-cols-3 gap-3">
-                        <input type="text" id="post-country" placeholder="국가 (예: 대한민국)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
-                        <input type="text" id="post-state" placeholder="도/주 (예: 경기도)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
-                        <input type="text" id="post-city" placeholder="시/군/구 (예: 고양시)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">카테고리</label>
+                        <select id="post-category" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
+                            <option value="관광지">🌲 관광지</option>
+                            <option value="음식점">🍕 음식점</option>
+                            <option value="숙소">🏨 숙소</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">국가</label>
+                        <input type="text" id="post-country" placeholder="예: 대한민국" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">도/주</label>
+                        <input type="text" id="post-state" placeholder="예: 경기도" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">시/군/구</label>
+                        <input type="text" id="post-city" placeholder="예: 고양시" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-2">여행 제목</label>
-                        <input type="text" id="post-title" placeholder="이번 여행을 한 줄로 표현한다면?" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">여행 제목</label>
+                        <input type="text" id="post-title" placeholder="이번 여행 장소를 한 줄로 명명한다면?" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-2">여행 경험 및 스토리</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">여행 스토리</label>
                         <textarea id="post-content" rows="4" placeholder="어떤 특별한 경험을 하셨나요? 자유롭게 적어보세요!" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition"></textarea>
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-2">여행 사진 링크 (여러 장 가능)</label>
-                    <div class="border border-slate-200 p-4 rounded-xl bg-slate-50">
-                        <input type="text" id="post-images" placeholder="이미지 주소들을 쉼표(,)로 구분해서 입력하세요 (예: 주소1, 주소2)" class="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-500 transition">
-                        <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
-                            ℹ️ 첫 번째로 입력한 사진 주소가 타일의 대표 이미지가 됩니다.
+                    <label class="block text-xs font-medium text-slate-500 mb-1.5">여행 사진 등록 (다중 선택 가능)</label>
+                    <div class="border border-slate-200 p-4 rounded-xl bg-slate-50 flex flex-col items-center justify-center gap-2">
+                        <input type="file" id="post-file-input" multiple accept="image/*" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <p class="text-[11px] text-slate-400 w-full text-left mt-1">
+                            ℹ️ 기기 안의 사진 파일을 직접 첨부할 수 있습니다. 첫 번째 사진이 타일의 대표 이미지가 됩니다.
                         </p>
                     </div>
                 </div>
 
-                <button id="btn-submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 rounded-xl font-medium shadow-md shadow-blue-500/10 hover:opacity-9s0 transition text-sm font-bold">
+                <button id="btn-submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 rounded-xl font-medium shadow-md shadow-blue-500/10 hover:opacity-90 transition text-sm font-bold">
                     나의 추억 저장하기 💾
                 </button>
             </div>
@@ -82,6 +96,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCqDopsGReKPSqnwtZeHoHi86QmnzUtVSk",
@@ -96,51 +111,82 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const storage = getStorage(app);
 
         const btnSubmit = document.getElementById('btn-submit');
         const postList = document.getElementById('post-list');
         const searchInput = document.getElementById('search-input');
+        const fileInput = document.getElementById('post-file-input');
 
         let allPosts = [];
 
+        // [핵심] 이미지 파일 업로드 처리 함수
+        async function uploadImages(files) {
+            const urls = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                // 파일 유니크 네임 매칭
+                const storageRef = sRef(storage, `images/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadUrl = await getDownloadURL(snapshot.ref);
+                urls.push(downloadUrl);
+            }
+            return urls;
+        }
+
         // 데이터 저장하기
-        btnSubmit.addEventListener('click', () => {
+        btnSubmit.addEventListener('click', async () => {
+            const category = document.getElementById('post-category').value;
             const country = document.getElementById('post-country').value.trim();
             const state = document.getElementById('post-state').value.trim();
             const city = document.getElementById('post-city').value.trim();
             const title = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value.trim();
-            const imagesInput = document.getElementById('post-images').value.trim();
+            const files = fileInput.files;
 
             if (!country || !city || !title || !content) {
-                alert('국가, 시, 제목, 내용은 꼭 입력해 주세요! ✍️');
+                alert('국가, 시, 제목, 내용은 필수 입력 사항입니다! ✍️');
                 return;
             }
 
-            let imageArray = [];
-            if (imagesInput) {
-                imageArray = imagesInput.split(',').map(url => url.trim()).filter(url => url !== '');
-            } else {
-                imageArray = ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"];
-            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "데이터 및 사진 저장 중... ⏳";
 
-            push(ref(db, 'my_posts'), {
-                country, state, city, title, content,
-                images: imageArray,
-                mainImage: imageArray[0],
-                createdAt: new Date().toLocaleDateString()
-            }).then(() => {
+            try {
+                let imageArray = [];
+                if (files.length > 0) {
+                    // 기기 내부 이미지 파일들을 파이어베이스 스토리지로 업로드
+                    imageArray = await uploadImages(files);
+                } else {
+                    // 사진이 없을 때 대체 기본 이미지
+                    imageArray = ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"];
+                }
+
+                await push(ref(db, 'my_posts'), {
+                    category, country, state, city, title, content,
+                    images: imageArray,
+                    mainImage: imageArray[0],
+                    createdAt: new Date().toLocaleDateString()
+                });
+
                 document.getElementById('post-country').value = '';
                 document.getElementById('post-state').value = '';
                 document.getElementById('post-city').value = '';
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
-                document.getElementById('post-images').value = '';
-                alert('기록이 안전하게 저장되었습니다! 🎉');
-            });
+                fileInput.value = '';
+                alert('추억 카드가 타임라인에 등록되었습니다! 🎉');
+
+            } catch (error) {
+                console.error(error);
+                alert('업로드 중 에러가 발생했습니다. 파이어베이스 Storage 규칙을 확인해 보세요.');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "나의 추억 저장하기 💾";
+            }
         });
 
-        // 카드 화면에 그리기
+        // 카드 생성 및 가시화
         function displayPosts(posts) {
             postList.innerHTML = '';
 
@@ -153,7 +199,7 @@
                 const card = document.createElement('div');
                 card.className = 'bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300';
                 
-                //전체 사진 썸네일 노출
+                // 갤러리 이미지 조각 생성
                 let allImagesHtml = '';
                 post.images.forEach(imgUrl => {
                     allImagesHtml += `
@@ -162,11 +208,21 @@
                         </div>`;
                 });
 
+                // 카테고리별 배지 색상 지정
+                let badgeColor = "bg-emerald-500";
+                if(post.category === "음식점") badgeColor = "bg-amber-500";
+                if(post.category === "숙소") badgeColor = "bg-violet-500";
+
                 card.innerHTML = `
                     <div class="h-52 w-full bg-slate-100 relative overflow-hidden">
                         <img src="${post.mainImage}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                        <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                        
+                        <span class="absolute top-3 left-3 ${badgeColor} text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                            ${post.category || '관광지'}
+                        </span>
+
+                        <span class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                             📍 ${post.country} ${post.state ? '· ' + post.state : ''} · ${post.city}
                         </span>
                     </div>
@@ -178,7 +234,7 @@
                         </div>
                         
                         <div class="border-t border-slate-50 pt-4">
-                            <span class="block text-[11px] font-bold text-slate-400 mb-2">갤러리 (${post.images.length}장)</span>
+                            <span class="block text-[11px] font-bold text-slate-400 mb-2">갤러리 사진 라이브러리 (${post.images.length}장)</span>
                             <div class="flex flex-wrap gap-2">
                                 ${allImagesHtml}
                             </div>
@@ -205,7 +261,7 @@
             displayPosts(allPosts);
         });
 
-        // 실시간 통합 검색 기능
+        // 실시간 다중 통합 검색창 엔진
         searchInput.addEventListener('input', (e) => {
             const keyword = e.target.value.toLowerCase().trim();
             if (!keyword) {
@@ -213,9 +269,11 @@
                 return;
             }
             const filtered = allPosts.filter(post => {
+                const cat = post.category ? post.category.toLowerCase() : "";
                 return post.country.toLowerCase().includes(keyword) || 
                        (post.state && post.state.toLowerCase().includes(keyword)) || 
-                       post.city.toLowerCase().includes(keyword);
+                       post.city.toLowerCase().includes(keyword) ||
+                       cat.includes(keyword);
             });
             displayPosts(filtered);
         });

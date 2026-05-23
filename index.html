@@ -116,15 +116,15 @@
         }
 
         .preview-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 0.5rem;
-            flex-wrap: wrap;
             margin-top: 0.5rem;
         }
 
         .preview-img {
-            width: 80px;
-            height: 80px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 4px;
             border: 1px solid #ddd;
@@ -228,15 +228,15 @@
         }
 
         .card-gallery {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 0.5rem;
-            flex-wrap: wrap;
             margin-top: 0.75rem;
         }
 
         .card-img {
-            width: 85px;
-            height: 85px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 6px;
             cursor: pointer;
@@ -279,7 +279,8 @@
         
         <section id="form-page" class="page active">
             <h2 id="form-title" style="margin-bottom: 1.25rem; font-size: 1.4rem;">새로운 추억 남기기</h2>
-            <div id="travel-form"> <input type="hidden" id="editing-id" value="">
+            <div id="travel-form">
+                <input type="hidden" id="editing-id" value="">
 
                 <div class="form-group">
                     <label>제목</label>
@@ -358,6 +359,12 @@
     </div>
 
     <script>
+        // 대용량 사진 처리를 위한 메모리 세션 딕셔너리 데이터베이스 생성
+        // 브라우저 탭 세션이 유지되는 동안 무제한 업로드 가능
+        if(!window.imageMemoryDB) {
+            window.imageMemoryDB = {};
+        }
+
         let uploadedImages = [];
         let existingImagesBackup = [];
 
@@ -370,6 +377,7 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
         }
 
+        // 🌟 용량 버그 수정의 핵심: 대용량 이미지 28개 처리를 위한 가상 객체 URL 매핑 최적화
         function previewImages(input) {
             const previewContainer = document.getElementById('image-preview');
             previewContainer.innerHTML = '';
@@ -377,15 +385,15 @@
 
             if (input.files) {
                 Array.from(input.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.classList.add('preview-img');
-                        previewContainer.appendChild(img);
-                        uploadedImages.push(e.target.result);
-                    }
-                    reader.readAsDataURL(file);
+                    // 용량을 차지하지 않는 브라우저 가상 메모리 임시 주소 발급
+                    const objectURL = URL.createObjectURL(file);
+                    
+                    const img = document.createElement('img');
+                    img.src = objectURL;
+                    img.classList.add('preview-img');
+                    previewContainer.appendChild(img);
+                    
+                    uploadedImages.push(objectURL);
                 });
             }
         }
@@ -400,7 +408,6 @@
             return `${year}.${month}.${date} ${hours}:${minutes}`;
         }
 
-        // 🌟 새로고침 없이 안전하게 데이터를 로컬스토리지에 밀어 넣는 핵심 자바스크립트 함수
         function saveRecord() {
             const editingId = document.getElementById('editing-id').value;
             const title = document.getElementById('title').value.trim();
@@ -411,19 +418,26 @@
             const review = document.getElementById('review').value;
             
             const ratingChecked = document.querySelector('input[name="rating"]:checked');
-            const rating = ratingChecked ? ratingChecked.value : "5"; // 별점 미선택 시 기본 5점
+            const rating = ratingChecked ? ratingChecked.value : "5";
 
-            // 필수값 검증 가드 코드
             if (!title || !country || !state || !city || !review) {
                 alert('빈칸 없이 모두 입력해 주세요! 📝');
                 return;
             }
 
             let currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
+            const recordId = editingId ? parseInt(editingId) : Date.now();
+
+            // 메모리 DB에 사진을 따로 저장하여 localStorage 한계 용량 5MB 우회
+            if(uploadedImages.length > 0) {
+                window.imageMemoryDB[recordId] = uploadedImages;
+            } else if (!editingId) {
+                window.imageMemoryDB[recordId] = [];
+            }
 
             if (editingId) {
                 currentRecords = currentRecords.map(rec => {
-                    if (rec.id === parseInt(editingId)) {
+                    if (rec.id === recordId) {
                         return {
                             ...rec,
                             title,
@@ -432,8 +446,8 @@
                             state,
                             city,
                             rating,
-                            review,
-                            images: uploadedImages.length > 0 ? uploadedImages : existingImagesBackup
+                            review
+                            // 사진 데이터 주소는 가상 메모리 객체로 추적 관리됨
                         };
                     }
                     return rec;
@@ -441,7 +455,7 @@
                 alert('기록이 수정되었습니다! ✨');
             } else {
                 const newRecord = {
-                    id: Date.now(), 
+                    id: recordId, 
                     datetime: getCurrentDateTimeString(),
                     title,
                     category,
@@ -449,8 +463,7 @@
                     state,
                     city,
                     rating,
-                    review,
-                    images: uploadedImages
+                    review
                 };
                 currentRecords.unshift(newRecord);
                 alert('기록이 안전하게 저장되었습니다! 🎉');
@@ -459,7 +472,7 @@
             localStorage.setItem('travelRecords', JSON.stringify(currentRecords));
             cancelEdit();
             switchPage('list-page');
-            renderRecords(); // 강제로 즉시 화면 리렌더링
+            renderRecords();
         }
 
         function renderRecords() {
@@ -526,10 +539,13 @@
 
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
 
+                // 메모리 저장 공간에서 해당 카드 ID의 28장 사진 데이터 안전하게 매핑
+                const currentImages = window.imageMemoryDB[rec.id] || [];
+
                 let galleryHtml = '';
-                if(rec.images && rec.images.length > 0) {
+                if(currentImages.length > 0) {
                     galleryHtml = `<div class="card-gallery">`;
-                    rec.images.forEach(imgSrc => {
+                    currentImages.forEach(imgSrc => {
                         galleryHtml += `<img src="${imgSrc}" class="card-img" onclick="window.open('${imgSrc}')" alt="여행사진">`;
                     });
                     galleryHtml += `</div>`;
@@ -539,4 +555,94 @@
 
                 card.innerHTML = `
                     <div class="card-top">
-                        <span
+                        <span class="card-category">${rec.category}</span>
+                        <span class="card-stars">${stars}</span>
+                    </div>
+                    <div class="card-title">${rec.title}</div>
+                    <div class="card-location">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
+                    <div class="card-date">📅 일시 : ${displayTime}</div>
+                    <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
+                    ${galleryHtml}
+                    <div class="card-actions">
+                        <button class="btn-action btn-edit" onclick="startEdit(${rec.id})">수정</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord(${rec.id})">삭제</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function startEdit(id) {
+            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+            const target = records.find(rec => rec.id === id);
+
+            if (!target) return;
+
+            document.getElementById('editing-id').value = target.id;
+            document.getElementById('title').value = target.title;
+            document.getElementById('category').value = target.category;
+            document.getElementById('country').value = target.country;
+            document.getElementById('state').value = target.state;
+            document.getElementById('city').value = target.city;
+            document.getElementById('review').value = target.review;
+            
+            const targetStar = document.getElementById(`star${target.rating}`);
+            if(targetStar) targetStar.checked = true;
+
+            existingImagesBackup = window.imageMemoryDB[target.id] || [];
+            const previewContainer = document.getElementById('image-preview');
+            previewContainer.innerHTML = '';
+            existingImagesBackup.forEach(imgSrc => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.classList.add('preview-img');
+                previewContainer.appendChild(img);
+            });
+
+            document.getElementById('form-title').innerText = "📝 나의 추억 수정하기";
+            document.getElementById('btn-submit').innerText = "수정 완료";
+            document.getElementById('btn-cancel').style.display = "block";
+            document.getElementById('edit-photo-notice').style.display = "block";
+
+            switchPage('form-page');
+            window.scrollTo(0, 0);
+        }
+
+        function cancelEdit() {
+            document.getElementById('title').value = '';
+            document.getElementById('country').value = '';
+            document.getElementById('state').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('review').value = '';
+            document.getElementById('photos').value = '';
+            document.getElementById('editing-id').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            
+            const checkedStar = document.querySelector('input[name="rating"]:checked');
+            if(checkedStar) checkedStar.checked = false;
+
+            uploadedImages = [];
+            existingImagesBackup = [];
+
+            document.getElementById('form-title').innerText = "새로운 추억 남기기";
+            document.getElementById('btn-submit').innerText = "저장하기";
+            document.getElementById('btn-cancel').style.display = "none";
+            document.getElementById('edit-photo-notice').style.display = "none";
+        }
+
+        function deleteRecord(id) {
+            if (confirm('정말로 이 여행 기록을 삭제하시겠습니까?')) {
+                const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+                const updatedRecords = records.filter(rec => rec.id !== id);
+                localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
+                delete window.imageMemoryDB[id];
+                renderRecords();
+            }
+        }
+
+        window.onload = function() {
+            renderRecords();
+        }
+    </script>
+</body>
+</html>

@@ -3,426 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 여행 아카이브 블로그</title>
+    <title>우리의 특별한 여행 블로그</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #334155; padding-bottom: 60px; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-
-        /* 상단 네비게이션 탭 */
-        .nav-tabs { display: flex; background: #ffffff; border-bottom: 2px solid #e2e8f0; margin-bottom: 30px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .tab-btn { flex: 1; padding: 18px; text-align: center; background: none; border: none; font-size: 0.95rem; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
-        .tab-btn.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: #f8fafc; }
-
-        .page { display: none; }
-        .page.active { display: block; }
-
-        /* 1페이지: 글 작성 폼 */
-        .write-box { background: #ffffff; padding: 25px; border-radius: 16px; border: 1px solid #e2e8f0; }
-        .form-title { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 20px; border-left: 4px solid #3b82f6; padding-left: 10px; }
-        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
-        .form-group.row { flex-direction: row; gap: 10px; }
-        .form-group.row .col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        
-        label { font-size: 0.85rem; font-weight: 700; color: #475569; }
-        input[type="text"], select, textarea { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; outline: none; }
-        textarea { resize: vertical; min-height: 120px; }
-        input[type="file"] { padding: 10px; background: #f1f5f9; border-radius: 8px; border: 1px dashed #cbd5e1; cursor: pointer; }
-
-        /* 이미지 업로드 프리뷰 및 대표사진 설정 영역 */
-        .preview-zone { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
-        .preview-wrapper { position: relative; width: 90px; height: 90px; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0; cursor: pointer; }
-        .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .preview-wrapper.main-cover { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
-        .preview-wrapper .cover-badge { position: absolute; top: 2px; left: 2px; background: #3b82f6; color: white; font-size: 10px; padding: 2px 4px; border-radius: 4px; font-weight: bold; display: none; }
-        .preview-wrapper.main-cover .cover-badge { display: block; }
-
-        .submit-btn { background: #3b82f6; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .submit-btn:hover { background: #2563eb; }
-
-        /* 2페이지: 검색 및 피드 */
-        .search-box { background: #ffffff; padding: 20px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 25px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .search-box input { flex: 2; min-width: 200px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; }
-        .search-box select { flex: 1; min-width: 120px; }
-
-        .blog-feed { display: flex; flex-direction: column; gap: 25px; }
-        .blog-post { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; position: relative; }
-        
-        /* 대표 사진 커버 뷰 */
-        .post-cover-container { position: relative; width: 100%; height: 280px; background: #e2e8f0; cursor: pointer; }
-        .post-cover-container img { width: 100%; height: 100%; object-fit: cover; }
-        .all-photos-btn { position: absolute; bottom: 15px; right: 15px; background: rgba(15,23,42,0.8); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; border: none; cursor: pointer; font-weight: 600; }
-        
-        .post-body { padding: 24px; }
-        .post-header-row { display: flex; justify-content: space-between; align-items: flex-start; }
-        .post-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-bottom: 12px; }
-        .post-tag.식당 { background: #fee2e2; color: #991b1b; }
-        .post-tag.숙소 { background: #fef9c3; color: #854d0e; }
-        .post-tag.명소 { background: #dcfce7; color: #166534; }
-        
-        /* 삭제 버튼 */
-        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
-        .delete-btn:hover { background: #fef2f2; }
-
-        .post-title { font-size: 1.4rem; color: #0f172a; font-weight: 800; margin-bottom: 6px; }
-        .post-geo { font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-bottom: 15px; }
-        .post-content { font-size: 0.98rem; color: #475569; line-height: 1.6; white-space: pre-wrap; margin-bottom: 15px; }
-        .post-footer { display: flex; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 15px; font-size: 0.85rem; color: #94a3b8; }
-        .post-stars { color: #f59e0b; }
-
-        /* ♻️ 3페이지: 휴지통 스타일 */
-        .trash-item { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .trash-info h4 { font-size: 1.1rem; color: #1e293b; margin-bottom: 4px; }
-        .trash-info p { font-size: 0.8rem; color: #64748b; }
-        .trash-actions { display: flex; gap: 10px; }
-        .restore-btn { background: #e0f2fe; color: #0369a1; border: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-        .hard-delete-btn { background: #fee2e2; color: #991b1b; border: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
-
-        /* 🖼️ 모든 사진 보기 모달 팝업 수정본 (모바일 최적화 바둑판) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.85); z-index: 200; justify-content: center; align-items: center; padding: 16px; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; max-width: 550px; width: 100%; border-radius: 20px; overflow: hidden; position: relative; padding: 20px; display: flex; flex-direction: column; max-height: 85vh; }
-        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: #64748b; z-index: 10; }
-        
-        /* ⭐️ 모바일에서 2열 바둑판 모양으로 시원하게 정렬되도록 격자수정 */
-        .modal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; overflow-y: auto; margin-top: 20px; padding-bottom: 10px; }
-        .modal-grid img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid #f1f5f9; }
-
-        .empty-message { text-align: center; padding: 60px 0; color: #94a3b8; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <nav class="nav-tabs">
-        <button class="tab-btn active" onclick="switchPage('write-page')">✏️ 글 작성</button>
-        <button class="tab-btn" onclick="switchPage('feed-page')">🔍 블로그 & 검색</button>
-        <button class="tab-btn" id="trash-tab-btn" onclick="switchPage('trash-page')">♻️ 휴지통 (0)</button>
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2">
+                ✈️ 여행 블로그
+            </h1>
+            <div id="auth-section">
+                <button id="btn-login" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                    구글 로그인
+                </button>
+            </div>
+        </div>
     </nav>
 
-    <div id="write-page" class="page active">
-        <div class="write-box">
-            <h2 class="form-title">새로운 여행 조각 기록</h2>
-            
-            <div class="form-group row">
-                <div class="col">
-                    <label>국가 이름</label>
-                    <input type="text" id="in-country" placeholder="예: 한국, 일본">
-                </div>
-                <div class="col">
-                    <label>카테고리</label>
-                    <select id="in-category">
-                        <option value="식당">🍕 음식점</option>
-                        <option value="숙소">🏨 숙박업소</option>
-                        <option value="명소">🎡 관광명소</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group row">
-                <div class="col">
-                    <label>도 / 광역시</label>
-                    <input type="text" id="in-state" placeholder="예: 경기도, 부산광역시">
-                </div>
-                <div class="col">
-                    <label>시 / 군 / 구</label>
-                    <input type="text" id="in-city" placeholder="예: 포천시, 수영구">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>장소 명칭 (글 제목)</label>
-                <input type="text" id="in-name" placeholder="예: 포천 아트밸리">
-            </div>
-
-            <div class="form-group">
-                <label>📸 사진 첨부 (여러 장 가능, 등록 후 클릭 시 대표사진으로 설정)</label>
-                <input type="file" id="in-images" multiple accept="image/*" onchange="handleImagePreview()">
-                <div class="preview-zone" id="preview-zone"></div>
-            </div>
-
-            <div class="form-group">
-                <label>평점</label>
-                <select id="in-stars">
-                    <option value="⭐⭐⭐⭐⭐">⭐⭐⭐⭐⭐</option>
-                    <option value="⭐⭐⭐⭐">⭐⭐⭐⭐</option>
-                    <option value="⭐⭐⭐">⭐⭐⭐</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>여행 후기</label>
-                <textarea id="in-review" placeholder="내용을 기록하세요."></textarea>
-            </div>
-
-            <button class="submit-btn" onclick="savePost()">✨ 블로그에 등록하기</button>
-        </div>
-    </div>
-
-    <div id="feed-page" class="page">
-        <div class="search-box">
-            <input type="text" id="search-keyword" oninput="searchPosts()" placeholder="국가, 지역, 제목 등으로 실시간 검색...">
-            <select id="search-category" onchange="searchPosts()">
-                <option value="all">전체 종류</option>
-                <option value="식당">🍕 음식점</option>
-                <option value="숙소">🏨 숙박업소</option>
-                <option value="명소">🎡 관광명소</option>
-            </select>
-        </div>
-        <div class="blog-feed" id="blog-feed"></div>
-    </div>
-
-    <div id="trash-page" class="page">
-        <div class="write-box">
-            <h2 class="form-title" style="border-left-color: #ef4444;">휴지통 자료고</h2>
-            <div id="trash-list"></div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="photo-modal" onclick="closeModal()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <span class="modal-close" onclick="closeModal()">&times;</span>
-        <h3 id="modal-title" style="color: #0f172a; font-size: 1.15rem; font-weight: 800;">모든 사진 모아보기</h3>
-        <div class="modal-grid" id="modal-grid"></div>
-    </div>
-</div>
-
-<script>
-    let myBlogData = JSON.parse(localStorage.getItem('myBlogData')) || [];
-    let trashData = JSON.parse(localStorage.getItem('trashData')) || [];
-    let uploadedBase64Images = []; 
-    let selectedCoverIndex = 0;   
-
-    function updateTrashBadge() {
-        document.getElementById('trash-tab-btn').textContent = `♻️ 휴지통 (${trashData.length})`;
-    }
-
-    function switchPage(pageId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        event.currentTarget.classList.add('active');
-
-        if(pageId === 'feed-page') searchPosts();
-        if(pageId === 'trash-page') renderTrash();
-    }
-
-    async function handleImagePreview() {
-        const fileInput = document.getElementById('in-images');
-        const previewZone = document.getElementById('preview-zone');
-        previewZone.innerHTML = '';
-        uploadedBase64Images = [];
-        selectedCoverIndex = 0;
-
-        if (fileInput.files.length === 0) return;
-
-        for (let i = 0; i < fileInput.files.length; i++) {
-            const file = fileInput.files[i];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                const base64 = e.target.result;
-                uploadedBase64Images.push(base64);
-
-                const wrapper = document.createElement('div');
-                wrapper.className = `preview-wrapper ${i === 0 ? 'main-cover' : ''}`;
-                wrapper.id = `prev-wrap-${i}`;
-                wrapper.onclick = () => setMainCover(i);
-                wrapper.innerHTML = `
-                    <img src="${base64}">
-                    <div class="cover-badge">대표</div>
-                `;
-                previewZone.appendChild(wrapper);
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function setMainCover(index) {
-        selectedCoverIndex = index;
-        document.querySelectorAll('.preview-wrapper').forEach((el, idx) => {
-            if(idx === index) el.classList.add('main-cover');
-            else el.classList.remove('main-cover');
-        });
-    }
-
-    function savePost() {
-        const country = document.getElementById('in-country').value.trim();
-        const state = document.getElementById('in-state').value.trim();
-        const city = document.getElementById('in-city').value.trim();
-        const name = document.getElementById('in-name').value.trim();
-        const category = document.getElementById('in-category').value;
-        const stars = document.getElementById('in-stars').value;
-        const review = document.getElementById('in-review').value.trim();
-
-        if(!country || !state || !city || !name || !review) {
-            alert("빈칸을 모두 채워주세요!");
-            return;
-        }
-
-        let finalImages = [...uploadedBase64Images];
-        if(finalImages.length === 0) {
-            finalImages.push("https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800");
-            selectedCoverIndex = 0;
-        }
-
-        if(selectedCoverIndex > 0 && selectedCoverIndex < finalImages.length) {
-            const temp = finalImages[0];
-            finalImages[0] = finalImages[selectedCoverIndex];
-            finalImages[selectedCoverIndex] = temp;
-        }
-
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
-
-        const newPost = { id: Date.now(), country, state, city, category, name, stars, review, date: dateStr, images: finalImages };
+    <main class="max-w-4xl mx-auto p-4 mt-6">
         
-        myBlogData.unshift(newPost);
-        localStorage.setItem('myBlogData', JSON.stringify(myBlogData));
+        <section id="write-section" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
+            <h3 class="text-lg font-bold mb-4 text-gray-800">새로운 여행 추억 남기기 📝</h3>
+            <div class="space-y-4">
+                <input type="text" id="post-title" placeholder="여행지 또는 제목을 입력하세요" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <textarea id="post-content" rows="4" placeholder="어떤 즐거운 일이 있었나요? 자유롭게 적어보세요!" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+                <button id="btn-submit" class="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition">
+                    소중한 추억 저장하기 📌
+                </button>
+            </div>
+        </section>
 
-        document.getElementById('in-country').value = '';
-        document.getElementById('in-state').value = '';
-        document.getElementById('in-city').value = '';
-        document.getElementById('in-name').value = '';
-        document.getElementById('in-review').value = '';
-        document.getElementById('in-images').value = '';
-        document.getElementById('preview-zone').innerHTML = '';
-        uploadedBase64Images = [];
+        <section>
+            <h3 class="text-xl font-bold mb-6 text-gray-800">모두의 여행 이야기 🌍</h3>
+            <div id="post-list" class="space-y-6">
+                <div class="text-center text-gray-500 py-12">여행 기록을 불러오는 중입니다... 🔄</div>
+            </div>
+        </section>
+    </main>
 
-        alert("블로그에 등록 완료!");
-        document.querySelectorAll('.tab-btn')[1].click();
-    }
+    <script type="module">
+        // 파이어베이스 모듈 가져오기
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    function searchPosts() {
-        const keyword = document.getElementById('search-keyword').value.toLowerCase();
-        const category = document.getElementById('search-category').value;
-        const feed = document.getElementById('blog-feed');
-        feed.innerHTML = '';
+        // ⭐️ 1단계에서 발급받은 한서님의 고유 파이어베이스 주소록 정보입니다.
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqDopsGReKPSqnwtZeHoHi86QmnzUtVSk",
+            authDomain: "travel-blog-f0bdd.firebaseapp.com",
+            projectId: "travel-blog-f0bdd",
+            storageBucket: "travel-blog-f0bdd.firebasestorage.app",
+            messagingSenderId: "603563736434",
+            appId: "1:603563736434:web:adf85d05b5fd1e6ca5b1eb",
+            measurementId: "G-YXB4924FB3"
+        };
 
-        const filtered = myBlogData.filter(item => {
-            const catMatch = (category === 'all' || item.category === category);
-            const textMatch = (item.country + item.state + item.city + item.name + item.review).toLowerCase().includes(keyword);
-            return catMatch && textMatch;
-        });
+        // 파이어베이스 시스템 가동
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        const provider = new GoogleAuthProvider();
 
-        if(filtered.length === 0) {
-            feed.innerHTML = `<div class="empty-message">등록된 여행 기록이 없습니다.</div>`;
-            return;
-        }
+        // HTML 태그 가져오기
+        const btnLogin = document.getElementById('btn-login');
+        const authSection = document.getElementById('auth-section');
+        const writeSection = document.getElementById('write-section');
+        const btnSubmit = document.getElementById('btn-submit');
+        const postList = document.getElementById('post-list');
 
-        filtered.forEach(post => {
-            const article = document.createElement('article');
-            article.className = 'blog-post';
-            article.innerHTML = `
-                <div class="post-cover-container" onclick="openAllPhotos(${post.id})">
-                    <img src="${post.images[0]}" alt="대표사진">
-                    <button class="all-photos-btn">🖼️ 전체 사진 보기 (${post.images.length})</button>
-                </div>
-                <div class="post-body">
-                    <div class="post-header-row">
-                        <span class="post-tag ${post.category}">${post.category}</span>
-                        <button class="delete-btn" onclick="moveToTrash(${post.id})">🗑️ 삭제</button>
+        let currentUser = null;
+
+        // [기능 1] 로그인 상태 감지 및 화면 자동 전환
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // 로그인 완료 시: 내비바에 프로필 표시 및 글쓰기 창 열기
+                authSection.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="${user.photoURL}" class="w-8 h-8 rounded-full shadow">
+                        <span class="font-medium text-gray-700 text-sm hidden sm:inline">${user.displayName}님</span>
+                        <button id="btn-logout" class="text-xs text-red-500 border border-red-200 px-2 py-1 rounded hover:bg-red-50">로그아웃</button>
                     </div>
-                    <h3 class="post-title">${post.name}</h3>
-                    <div class="post-geo">🗺️ ${post.country} ＞ ${post.state} ＞ ${post.city}</div>
-                    <p class="post-content">${post.review}</p>
-                    <div class="post-footer">
-                        <span class="post-stars">${post.stars}</span>
-                        <span>📅 ${post.date}</span>
+                `;
+                writeSection.classList.remove('hidden');
+
+                // 로그아웃 이벤트 연결
+                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+            } else {
+                currentUser = null;
+                // 로그아웃 상태 시: 로그인 버튼만 노출하고 글쓰기 창 숨김
+                authSection.innerHTML = `<button id="btn-login-dynamic" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">구글 로그인</button>`;
+                writeSection.classList.add('hidden');
+                
+                document.getElementById('btn-login-dynamic').addEventListener('click', () => signInWithPopup(auth, provider));
+            }
+        });
+
+        // 초기 화면에 있는 기존 로그인 버튼에도 이벤트 연결
+        if(btnLogin) {
+            btnLogin.addEventListener('click', () => signInWithPopup(auth, provider));
+        }
+
+        // [기능 2] 실시간 데이터베이스에 글 저장하기
+        btnSubmit.addEventListener('click', () => {
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+
+            if (!title || !content) {
+                alert('제목과 내용을 모두 적어주세요! ✍️');
+                return;
+            }
+
+            // 데이터베이스의 'posts' 폴더안에 글 오브젝트를 밀어넣습니다.
+            push(ref(db, 'posts'), {
+                title: title,
+                content: content,
+                userName: currentUser.displayName,
+                userPhoto: currentUser.photoURL,
+                createdAt: new Date().toLocaleString()
+            }).then(() => {
+                // 저장 성공 시 입력창 초기화
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+                alert('추억이 성공적으로 저장되었습니다! 🎉');
+            }).catch((error) => {
+                alert('저장 실패: 규칙 설정을 다시 확인해보세요!');
+                console.error(error);
+            });
+        });
+
+        // [기능 3] 실시간으로 저장소에서 글 가져와서 화면에 그리기
+        onValue(ref(db, 'posts'), (snapshot) => {
+            postList.innerHTML = ''; // 기존 목록 청소
+            const data = snapshot.val();
+
+            if (!data) {
+                postList.innerHTML = `<div class="text-center text-gray-400 py-12">아직 작성된 여행 이야기가 없어요. 첫 번째 주인공이 되어보세요! 🧳</div>`;
+                return;
+            }
+
+            // 최신 글이 맨 위로 올라오도록 정렬하여 화면에 배치
+            const keys = Object.keys(data).reverse();
+            keys.forEach(key => {
+                const post = data[key];
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col gap-4';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${post.userPhoto}" class="w-9 h-9 rounded-full border">
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-base">${post.title}</h4>
+                                <p class="text-xs text-gray-500">${post.userName}</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">${post.createdAt}</span>
                     </div>
-                </div>
-            `;
-            feed.appendChild(article);
+                    <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">${post.content}</p>
+                `;
+                postList.appendChild(card);
+            });
         });
-        updateTrashBadge();
-    }
-
-    function moveToTrash(id) {
-        if(!confirm("이 기록을 휴지통으로 보내시겠습니까?")) return;
-        const targetIdx = myBlogData.findIndex(p => p.id === id);
-        if(targetIdx > -1) {
-            const item = myBlogData.splice(targetIdx, 1)[0];
-            trashData.unshift(item);
-            localStorage.setItem('myBlogData', JSON.stringify(myBlogData));
-            localStorage.setItem('trashData', JSON.stringify(trashData));
-            searchPosts();
-        }
-    }
-
-    function renderTrash() {
-        const list = document.getElementById('trash-list');
-        list.innerHTML = '';
-
-        if(trashData.length === 0) {
-            list.innerHTML = `<div class="empty-message">휴지통이 비어 있습니다.</div>`;
-            return;
-        }
-
-        trashData.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'trash-item';
-            div.innerHTML = `
-                <div class="trash-info">
-                    <h4>${item.name}</h4>
-                    <p>위치: ${item.country} ${item.state} | 삭제일자: ${item.date}</p>
-                </div>
-                <div class="trash-actions">
-                    <button class="restore-btn" onclick="restoreItem(${item.id})">복구</button>
-                    <button class="hard-delete-btn" onclick="hardDeleteItem(${item.id})">영구삭제</button>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-        updateTrashBadge();
-    }
-
-    function restoreItem(id) {
-        const idx = trashData.findIndex(p => p.id === id);
-        if(idx > -1) {
-            const item = trashData.splice(idx, 1)[0];
-            myBlogData.push(item);
-            localStorage.setItem('myBlogData', JSON.stringify(myBlogData));
-            localStorage.setItem('trashData', JSON.stringify(trashData));
-            renderTrash();
-        }
-    }
-
-    function hardDeleteItem(id) {
-        if(!confirm("정말 영구 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
-        const idx = trashData.findIndex(p => p.id === id);
-        if(idx > -1) {
-            trashData.splice(idx, 1);
-            localStorage.setItem('trashData', JSON.stringify(trashData));
-            renderTrash();
-        }
-    }
-
-    function openAllPhotos(id) {
-        const post = myBlogData.find(p => p.id === id);
-        if(!post) return;
-
-        document.getElementById('modal-title').textContent = `📸 [${post.name}] 사진 앨범`;
-        const grid = document.getElementById('modal-grid');
-        grid.innerHTML = '';
-
-        post.images.forEach(imgData => {
-            const img = document.createElement('img');
-            img.src = imgData;
-            grid.appendChild(img);
-        });
-
-        document.getElementById('photo-modal').classList.add('active');
-    }
-
-    function closeModal() {
-        document.getElementById('photo-modal').classList.remove('active');
-    }
-
-    window.onload = function() {
-        searchPosts();
-    };
-</script>
-
+    </script>
 </body>
 </html>

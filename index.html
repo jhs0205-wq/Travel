@@ -12,6 +12,7 @@
             --text-color: #333333;
             --danger-color: #e74c3c;
             --edit-color: #f39c12;
+            --link-color: #2ecc71;
         }
 
         body {
@@ -76,7 +77,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], select, textarea {
+        input[type="text"], input[type="url"], select, textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ccc;
@@ -254,6 +255,26 @@
             margin-bottom: 0.75rem;
         }
 
+        /* 관련 사이트 링크 스타일 */
+        .card-link-box {
+            margin: 0.75rem 0;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background-color: #e8f8f0;
+            color: #27ae60;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-decoration: none;
+            border: 1px solid #2ecc71;
+            word-break: break-all;
+        }
+
         .card-gallery {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -341,6 +362,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label>관련 사이트 링크 (선택)</label>
+                    <input type="url" id="site-url" placeholder="https://example.com (참고한 링크나 주소를 넣어보세요)">
+                </div>
+
+                <div class="form-group">
                     <label>만족도</label>
                     <div class="rating">
                         <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
@@ -415,7 +441,6 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
         }
 
-        // 🌟 핵심 버그 수정: 대용량 이미지들을 가볍게 압축해서 영구 저장용 텍스트 파일로 변환
         function processImages(input) {
             const previewContainer = document.getElementById('image-preview');
             const loadingMsg = document.getElementById('loading-msg');
@@ -424,7 +449,7 @@
 
             if (!input.files || input.files.length === 0) return;
 
-            loadingMsg.style.display = 'block'; // 압축 중 안내 노출
+            loadingMsg.style.display = 'block';
             let processedCount = 0;
             const filesArray = Array.from(input.files);
 
@@ -434,7 +459,6 @@
                     const imgElement = new Image();
                     imgElement.src = e.target.result;
                     imgElement.onload = function() {
-                        // 캔버스를 이용해 사진 해상도를 모바일 화면 전용(최대 가로 400px)으로 압축 다이어트
                         const canvas = document.createElement('canvas');
                         const MAX_WIDTH = 400;
                         let width = imgElement.width;
@@ -447,13 +471,11 @@
                         canvas.width = width;
                         canvas.height = height;
 
-                        const ctx = canvas.getContext('20d' === '2d' ? '2d' : '2d');
+                        const ctx = canvas.getContext('2d');
                         ctx.drawImage(imgElement, 0, 0, width, height);
 
-                        // 압축된 이미지를 압축률 0.7의 가벼운 데이터 코드로 추출
                         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-                        // 화면 프리뷰 출력
                         const img = document.createElement('img');
                         img.src = compressedDataUrl;
                         img.classList.add('preview-img');
@@ -462,7 +484,6 @@
                         uploadedImages.push(compressedDataUrl);
                         processedCount++;
 
-                        // 모든 사진 변환 완료 시 로딩창 끄기
                         if (processedCount === filesArray.length) {
                             loadingMsg.style.display = 'none';
                         }
@@ -489,6 +510,7 @@
             const country = document.getElementById('country').value.trim();
             const state = document.getElementById('state').value.trim();
             const city = document.getElementById('city').value.trim();
+            const siteUrl = document.getElementById('site-url').value.trim(); // 링크 값 확보
             const review = document.getElementById('review').value;
             
             const ratingChecked = document.querySelector('input[name="rating"]:checked');
@@ -512,9 +534,9 @@
                             country,
                             state,
                             city,
+                            siteUrl, // 링크 데이터 수정 반영
                             rating,
                             review,
-                            // 새 사진이 있으면 가벼워진 데이터 적용, 없으면 백업 보존
                             images: uploadedImages.length > 0 ? uploadedImages : existingImagesBackup
                         };
                     }
@@ -530,9 +552,10 @@
                     country,
                     state,
                     city,
+                    siteUrl, // 링크 데이터 신규 추가
                     rating,
                     review,
-                    images: uploadedImages // 이제 무제한 영구저장 가능!
+                    images: uploadedImages
                 };
                 currentRecords.unshift(newRecord);
                 alert('기록이 안전하게 저장되었습니다! 🎉');
@@ -623,9 +646,22 @@
                 card.classList.add('record-card');
 
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
-                
-                // 🌟 영구 저장된 이미지 배열 추출
                 const currentImages = rec.images || [];
+
+                // 🌟 링크가 있을 때만 클릭 가능한 버튼식 HTML 조립
+                let linkHtml = '';
+                if (rec.siteUrl) {
+                    // 주소창에 http가 안 붙어있을 때 링크 작동오류를 방지하는 코드
+                    let formattedUrl = rec.siteUrl;
+                    if (!/^https?:\/\//i.test(formattedUrl)) {
+                        formattedUrl = 'https://' + formattedUrl;
+                    }
+                    linkHtml = `
+                        <div class="card-link-box">
+                            <a href="${formattedUrl}" target="_blank" class="card-link">🔗 관련 사이트 방문하기</a>
+                        </div>
+                    `;
+                }
 
                 let galleryHtml = '';
                 if(currentImages.length > 0) {
@@ -646,7 +682,7 @@
                     <div class="card-title">${rec.title}</div>
                     <div class="card-location">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
                     <div class="card-date">📅 일시 : ${displayTime}</div>
-                    <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
+                    ${linkHtml} <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
                     ${galleryHtml}
                     <div class="card-actions">
                         <button class="btn-action btn-edit" onclick="startEdit(${rec.id})">수정</button>
@@ -669,6 +705,7 @@
             document.getElementById('country').value = target.country;
             document.getElementById('state').value = target.state;
             document.getElementById('city').value = target.city;
+            document.getElementById('site-url').value = target.siteUrl || ''; // 수정 시 기존 링크 세팅
             document.getElementById('review').value = target.review;
             
             const targetStar = document.getElementById(`star${target.rating}`);
@@ -698,6 +735,7 @@
             document.getElementById('country').value = '';
             document.getElementById('state').value = '';
             document.getElementById('city').value = '';
+            document.getElementById('site-url').value = ''; // 입력 폼 초기화
             document.getElementById('review').value = '';
             document.getElementById('photos').value = '';
             document.getElementById('editing-id').value = '';

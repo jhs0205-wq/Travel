@@ -147,7 +147,7 @@
             padding: 1rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .search-inputs {
@@ -170,6 +170,33 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+        }
+
+        /* 🌟 2페이지 카테고리 필터 탭 스타일 */
+        .category-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 0.6rem 0.2rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #4a5568;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
         }
 
         /* 1열 카드 리스트 */
@@ -271,7 +298,7 @@
     </header>
 
     <nav>
-        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">여행 기록하기</button>
+        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">旅行 기록하기</button>
         <button id="nav-list" onclick="switchPage('list-page'); renderRecords();">추억 둘러보기</button>
     </nav>
 
@@ -354,19 +381,27 @@
                 </div>
             </div>
 
+            <div class="category-tabs">
+                <button class="tab-btn active" id="tab-all" onclick="filterCategory('전체')">전체보기</button>
+                <button class="tab-btn" id="tab-food" onclick="filterCategory('음식')">🍕 음식</button>
+                <button class="tab-btn" id="tab-sight" onclick="filterCategory('관광지')">⛰️ 관광지</button>
+                <button class="tab-btn" id="tab-stay" onclick="filterCategory('숙소')">🏨 숙소</button>
+            </div>
+
             <div id="records-container"></div>
         </section>
     </div>
 
     <script>
-        // 대용량 사진 처리를 위한 메모리 세션 딕셔너리 데이터베이스 생성
-        // 브라우저 탭 세션이 유지되는 동안 무제한 업로드 가능
         if(!window.imageMemoryDB) {
             window.imageMemoryDB = {};
         }
 
         let uploadedImages = [];
         let existingImagesBackup = [];
+        
+        // 🌟 현재 선택된 2페이지 카테고리 상태 추적 변수 (기본값: 전체)
+        let currentFilterCategory = '전체';
 
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -377,7 +412,6 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
         }
 
-        // 🌟 용량 버그 수정의 핵심: 대용량 이미지 28개 처리를 위한 가상 객체 URL 매핑 최적화
         function previewImages(input) {
             const previewContainer = document.getElementById('image-preview');
             previewContainer.innerHTML = '';
@@ -385,7 +419,6 @@
 
             if (input.files) {
                 Array.from(input.files).forEach(file => {
-                    // 용량을 차지하지 않는 브라우저 가상 메모리 임시 주소 발급
                     const objectURL = URL.createObjectURL(file);
                     
                     const img = document.createElement('img');
@@ -428,7 +461,6 @@
             let currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
             const recordId = editingId ? parseInt(editingId) : Date.now();
 
-            // 메모리 DB에 사진을 따로 저장하여 localStorage 한계 용량 5MB 우회
             if(uploadedImages.length > 0) {
                 window.imageMemoryDB[recordId] = uploadedImages;
             } else if (!editingId) {
@@ -447,7 +479,6 @@
                             city,
                             rating,
                             review
-                            // 사진 데이터 주소는 가상 메모리 객체로 추적 관리됨
                         };
                     }
                     return rec;
@@ -475,11 +506,30 @@
             renderRecords();
         }
 
+        // 🌟 카테고리 탭 클릭 시 상태 변경 및 렌더링 함수
+        function filterCategory(categoryName) {
+            currentFilterCategory = categoryName;
+            
+            // 버튼 활성화 스타일 교체
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(categoryName === '전체') document.getElementById('tab-all').classList.add('active');
+            if(categoryName === '음식') document.getElementById('tab-food').classList.add('active');
+            if(categoryName === '관광지') document.getElementById('tab-sight').classList.add('active');
+            if(categoryName === '숙소') document.getElementById('tab-stay').classList.add('active');
+            
+            renderRecords(); // 필터 변경 후 리스트 재출력
+        }
+
         function renderRecords() {
             const container = document.getElementById('records-container');
             container.innerHTML = '';
 
             let records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+
+            // 🌟 [추가된 필터 조건] 선택한 카테고리가 '전체'가 아니라면 해당 카테고리 글만 1차 선별
+            if (currentFilterCategory !== '전체') {
+                records = records.filter(rec => rec.category === currentFilterCategory);
+            }
 
             const sCountry = document.getElementById('search-country').value.trim().toLowerCase();
             const sState = document.getElementById('search-state').value.trim().toLowerCase();
@@ -529,7 +579,7 @@
             }
 
             if(displayRecords.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:3rem;">조건에 맞는 여행 기록이 없습니다. 🗺️</p>';
+                container.innerHTML = `<p style="text-align:center; color:#999; margin-top:3rem;">[${currentFilterCategory}] 조건에 맞는 여행 기록이 없습니다. 🗺️</p>`;
                 return;
             }
 
@@ -538,8 +588,6 @@
                 card.classList.add('record-card');
 
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
-
-                // 메모리 저장 공간에서 해당 카드 ID의 28장 사진 데이터 안전하게 매핑
                 const currentImages = window.imageMemoryDB[rec.id] || [];
 
                 let galleryHtml = '';

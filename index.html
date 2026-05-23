@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리의 특별한 여행 블로그</title>
+    <title>나만의 특별한 여행 기록장</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #f3f4f6; }
@@ -12,45 +12,54 @@
 <body>
 
     <nav class="bg-white shadow-md p-4 sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2">
-                ✈️ 여행 블로그
+                ✈️ 나의 여행 다이어리
             </h1>
-            <div id="auth-section">
-                <button id="btn-login" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                    구글 로그인
-                </button>
+            <div class="w-full sm:w-72">
+                <input type="text" id="search-input" placeholder="국가, 도, 시 키워드 검색..." class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm">
             </div>
         </div>
     </nav>
 
     <main class="max-w-4xl mx-auto p-4 mt-6">
         
-        <section id="write-section" class="bg-white p-6 rounded-xl shadow-md mb-8 hidden">
-            <h3 class="text-lg font-bold mb-4 text-gray-800">새로운 여행 추억 남기기 📝</h3>
+        <section class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h3 class="text-lg font-bold mb-4 text-gray-800">새로운 여행 추억 기록하기 📌</h3>
             <div class="space-y-4">
-                <input type="text" id="post-title" placeholder="여행지 또는 제목을 입력하세요" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <textarea id="post-content" rows="4" placeholder="어떤 즐거운 일이 있었나요? 자유롭게 적어보세요!" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
-                <button id="btn-submit" class="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition">
-                    소중한 추억 저장하기 📌
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" id="post-country" placeholder="국가 (예: 대한민국)" class="p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <input type="text" id="post-state" placeholder="도/주 (예: 경기도)" class="p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <input type="text" id="post-city" placeholder="시/군/구 (예: 고양시)" class="p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                </div>
+                <input type="text" id="post-title" placeholder="여행 제목을 입력하세요" class="w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <textarea id="post-content" rows="4" placeholder="어떤 즐거운 경험을 하셨나요? 자유롭게 적어보세요!" class="w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+                
+                <div class="border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50 text-center">
+                    <p class="text-xs text-gray-500 mb-2">여러 장의 사진 이미지 주소(URL)를 쉼표(,)로 구분해서 입력하세요</p>
+                    <input type="text" id="post-images" placeholder="예: https://주소1.jpg, https://주소2.jpg" class="w-full p-2 border rounded-lg text-xs focus:outline-none">
+                    <p class="text-xs text-blue-500 mt-2">💡 첫 번째 주소가 자동으로 '대표 사진'이 됩니다. 순서를 원하는 대로 배치해 보세요!</p>
+                </div>
+
+                <button id="btn-submit" class="w-full bg-blue-500 text-white py-3 rounded-lg font-bold hover:bg-blue-600 transition text-sm">
+                    나의 소중한 추억 저장하기 💾
                 </button>
             </div>
         </section>
 
         <section>
-            <h3 class="text-xl font-bold mb-6 text-gray-800">모두의 여행 이야기 🌍</h3>
+            <h3 class="text-xl font-bold mb-6 text-gray-800">내가 가본 여행지 목록 🗺️</h3>
             <div id="post-list" class="space-y-6">
-                <div class="text-center text-gray-500 py-12">여행 기록을 불러오는 중입니다... 🔄</div>
+                <div class="text-center text-gray-500 py-12">기록을 불러오는 중입니다... 🔄</div>
             </div>
         </section>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 🔗 한서님의 고유 파이어베이스 정보와 실시간 데이터베이스 주소가 결합된 설정입니다.
+        // 🔗 한서님의 고유 파이어베이스 정보
         const firebaseConfig = {
             apiKey: "AIzaSyCqDopsGReKPSqnwtZeHoHi86QmnzUtVSk",
             authDomain: "travel-blog-f0bdd.firebaseapp.com",
@@ -62,101 +71,143 @@
             measurementId: "G-YXB4924FB3"
         };
 
-        // 시스템 기동
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
 
-        const btnLogin = document.getElementById('btn-login');
-        const authSection = document.getElementById('auth-section');
-        const writeSection = document.getElementById('write-section');
         const btnSubmit = document.getElementById('btn-submit');
         const postList = document.getElementById('post-list');
+        const searchInput = document.getElementById('search-input');
 
-        let currentUser = null;
+        let allPosts = []; // 전체 데이터를 담아둘 배열
 
-        // 로그인 상태 감지
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                authSection.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <img src="${user.photoURL}" class="w-8 h-8 rounded-full shadow">
-                        <span class="font-medium text-gray-700 text-sm hidden sm:inline">${user.displayName}님</span>
-                        <button id="btn-logout" class="text-xs text-red-500 border border-red-200 px-2 py-1 rounded hover:bg-red-50">로그아웃</button>
-                    </div>
-                `;
-                writeSection.classList.remove('hidden');
-                document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-            } else {
-                currentUser = null;
-                authSection.innerHTML = `<button id="btn-login-dynamic" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">구글 로그인</button>`;
-                writeSection.classList.add('hidden');
-                document.getElementById('btn-login-dynamic').addEventListener('click', () => signInWithPopup(auth, provider));
-            }
-        });
-
-        if(btnLogin) {
-            btnLogin.addEventListener('click', () => signInWithPopup(auth, provider));
-        }
-
-        // 글 저장 로직
+        // [기능 1] 데이터베이스에 글 저장하기
         btnSubmit.addEventListener('click', () => {
+            const country = document.getElementById('post-country').value.trim();
+            const state = document.getElementById('post-state').value.trim();
+            const city = document.getElementById('post-city').value.trim();
             const title = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value.trim();
+            const imagesInput = document.getElementById('post-images').value.trim();
 
-            if (!title || !content) {
-                alert('제목과 내용을 모두 적어주세요! ✍️');
+            if (!country || !city || !title || !content) {
+                alert('국가, 시, 제목, 내용은 필수 입력 사항입니다! ✍️');
                 return;
             }
 
-            push(ref(db, 'posts'), {
-                title: title,
-                content: content,
-                userName: currentUser.displayName,
-                userPhoto: currentUser.photoURL,
+            // 이미지 주소들을 분리하여 배열로 저장
+            let imageArray = [];
+            if (imagesInput) {
+                imageArray = imagesInput.split(',').map(url => url.trim()).filter(url => url !== '');
+            } else {
+                // 이미지가 없을 때 기본 이미지 배치
+                imageArray = ["https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800"];
+            }
+
+            push(ref(db, 'my_posts'), {
+                country,
+                state,
+                city,
+                title,
+                content,
+                images: imageArray, // 사진 배열 전체 저장
+                mainImage: imageArray[0], // 첫 번째 사진이 대표 사진이 됨
                 createdAt: new Date().toLocaleString()
             }).then(() => {
+                document.getElementById('post-country').value = '';
+                document.getElementById('post-state').value = '';
+                document.getElementById('post-city').value = '';
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
-                alert('추억이 성공적으로 저장되었습니다! 🎉');
+                document.getElementById('post-images').value = '';
+                alert('기록이 성공적으로 저장되었습니다! 🎉');
             }).catch((error) => {
-                alert('저장 실패: 규칙 설정을 다시 확인해보세요!');
+                alert('저장 실패!');
                 console.error(error);
             });
         });
 
-        // 글 불러오기 로직
-        onValue(ref(db, 'posts'), (snapshot) => {
+        // [기능 2] 데이터 가져오기 및 화면 출력 함수
+        function displayPosts(posts) {
             postList.innerHTML = '';
-            const data = snapshot.val();
 
-            if (!data) {
-                postList.innerHTML = `<div class="text-center text-gray-400 py-12">아직 작성된 여행 이야기가 없어요. 첫 번째 주인공이 되어보세요! 🧳</div>`;
+            if (posts.length === 0) {
+                postList.innerHTML = `<div class="text-center text-gray-400 py-12">검색 결과가 없거나 작성된 이야기가 없습니다. 🧳</div>`;
                 return;
             }
 
-            const keys = Object.keys(data).reverse();
-            keys.forEach(key => {
-                const post = data[key];
+            posts.forEach(post => {
                 const card = document.createElement('div');
-                card.className = 'bg-white p-6 rounded-xl shadow-md border border-gray-100 flex flex-col gap-4';
+                card.className = 'bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col md:flex-row';
+                
+                // 📸 업로드된 모든 사진들을 하단에 배치하기 위한 HTML 조각 생성
+                let allImagesHtml = '';
+                post.images.forEach(imgUrl => {
+                    allImagesHtml += `<img src="${imgUrl}" class="w-16 h-16 object-cover rounded-md border shadow-sm hover:scale-105 transition cursor-pointer" onclick="window.open('${imgUrl}')">`;
+                });
+
                 card.innerHTML = `
-                    <div class="flex justify-between items-center border-b pb-3">
-                        <div class="flex items-center gap-3">
-                            <img src="${post.userPhoto}" class="w-9 h-9 rounded-full border">
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-base">${post.title}</h4>
-                                <p class="text-xs text-gray-500">${post.userName}</p>
+                    <div class="md:w-1/3 h-48 md:h-auto relative bg-gray-200">
+                        <img src="${post.mainImage}" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-bold shadow">대표 사진 ⭐</span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 text-xs font-bold text-blue-500 mb-1">
+                                📍 ${post.country} > ${post.state ? post.state + ' > ' : ''}${post.city}
+                            </div>
+                            <h4 class="font-bold text-gray-900 text-lg mb-2">${post.title}</h4>
+                            <p class="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">${post.content}</p>
+                        </div>
+                        
+                        <div class="border-t pt-3">
+                            <p class="text-xs font-bold text-gray-400 mb-2">업로드된 전체 사진 (${post.images.length}장)</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${allImagesHtml}
                             </div>
                         </div>
-                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">${post.createdAt}</span>
+                        
+                        <div class="text-right text-xs text-gray-400">
+                            작성일: ${post.createdAt}
+                        </div>
                     </div>
-                    <p class="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">${post.content}</p>
                 `;
                 postList.appendChild(card);
             });
+        }
+
+        // Realtime Database 실시간 리스너 연결
+        onValue(ref(db, 'my_posts'), (snapshot) => {
+            const data = snapshot.val();
+            allPosts = [];
+
+            if (data) {
+                // 최신순 정렬을 위해 배열에 역순으로 매칭
+                Object.keys(data).reverse().forEach(key => {
+                    allPosts.push(data[key]);
+                });
+            }
+            displayPosts(allPosts);
+        });
+
+        // [기능 3] 🔍 실시간 키워드 검색 엔진 작동
+        searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase().trim();
+            
+            if (!keyword) {
+                displayPosts(allPosts); // 검색어가 없으면 전체 노출
+                return;
+            }
+
+            // 국가, 도, 시 문자열에 키워드가 매칭되는지 필터링
+            const filtered = allPosts.filter(post => {
+                const countryMatch = post.country.toLowerCase().includes(keyword);
+                const stateMatch = post.state ? post.state.toLowerCase().includes(keyword) : false;
+                const cityMatch = post.city.toLowerCase().includes(keyword);
+                
+                return countryMatch || stateMatch || cityMatch;
+            });
+
+            displayPosts(filtered);
         });
     </script>
 </body>

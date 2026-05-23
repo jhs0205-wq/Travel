@@ -172,7 +172,7 @@
             font-weight: bold;
         }
 
-        /* 🌟 2페이지 카테고리 필터 탭 스타일 */
+        /* 카테고리 필터 탭 */
         .category-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -289,6 +289,14 @@
 
         .btn-edit { background-color: var(--edit-color); }
         .btn-delete { background-color: var(--danger-color); }
+        
+        .loading-text {
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            margin-top: 5px;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -298,7 +306,7 @@
     </header>
 
     <nav>
-        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">旅行 기록하기</button>
+        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">여행 기록하기</button>
         <button id="nav-list" onclick="switchPage('list-page'); renderRecords();">추억 둘러보기</button>
     </nav>
 
@@ -345,7 +353,8 @@
 
                 <div class="form-group">
                     <label>사진 업로드 (여러 장 가능)</label>
-                    <input type="file" id="photos" accept="image/*" multiple onchange="previewImages(this)">
+                    <input type="file" id="photos" accept="image/*" multiple onchange="processImages(this)">
+                    <div id="loading-msg" class="loading-text">📸 사진 최적화 압축 중... 잠시만 기다려주세요.</div>
                     <div id="image-preview" class="preview-container"></div>
                     <p id="edit-photo-notice" style="display:none; font-size:0.8rem; color:#888; margin-top:5px;">* 수정 시 새 사진을 올리지 않으면 기존 사진이 유지됩니다.</p>
                 </div>
@@ -393,14 +402,8 @@
     </div>
 
     <script>
-        if(!window.imageMemoryDB) {
-            window.imageMemoryDB = {};
-        }
-
         let uploadedImages = [];
         let existingImagesBackup = [];
-        
-        // 🌟 현재 선택된 2페이지 카테고리 상태 추적 변수 (기본값: 전체)
         let currentFilterCategory = '전체';
 
         function switchPage(pageId) {
@@ -412,23 +415,61 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
         }
 
-        function previewImages(input) {
+        // 🌟 핵심 버그 수정: 대용량 이미지들을 가볍게 압축해서 영구 저장용 텍스트 파일로 변환
+        function processImages(input) {
             const previewContainer = document.getElementById('image-preview');
+            const loadingMsg = document.getElementById('loading-msg');
             previewContainer.innerHTML = '';
             uploadedImages = [];
 
-            if (input.files) {
-                Array.from(input.files).forEach(file => {
-                    const objectURL = URL.createObjectURL(file);
-                    
-                    const img = document.createElement('img');
-                    img.src = objectURL;
-                    img.classList.add('preview-img');
-                    previewContainer.appendChild(img);
-                    
-                    uploadedImages.push(objectURL);
-                });
-            }
+            if (!input.files || input.files.length === 0) return;
+
+            loadingMsg.style.display = 'block'; // 압축 중 안내 노출
+            let processedCount = 0;
+            const filesArray = Array.from(input.files);
+
+            filesArray.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElement = new Image();
+                    imgElement.src = e.target.result;
+                    imgElement.onload = function() {
+                        // 캔버스를 이용해 사진 해상도를 모바일 화면 전용(최대 가로 400px)으로 압축 다이어트
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        let width = imgElement.width;
+                        let height = imgElement.height;
+
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+
+                        const ctx = canvas.getContext('20d' === '2d' ? '2d' : '2d');
+                        ctx.drawImage(imgElement, 0, 0, width, height);
+
+                        // 압축된 이미지를 압축률 0.7의 가벼운 데이터 코드로 추출
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                        // 화면 프리뷰 출력
+                        const img = document.createElement('img');
+                        img.src = compressedDataUrl;
+                        img.classList.add('preview-img');
+                        previewContainer.appendChild(img);
+
+                        uploadedImages.push(compressedDataUrl);
+                        processedCount++;
+
+                        // 모든 사진 변환 완료 시 로딩창 끄기
+                        if (processedCount === filesArray.length) {
+                            loadingMsg.style.display = 'none';
+                        }
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
         function getCurrentDateTimeString() {
@@ -461,12 +502,6 @@
             let currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
             const recordId = editingId ? parseInt(editingId) : Date.now();
 
-            if(uploadedImages.length > 0) {
-                window.imageMemoryDB[recordId] = uploadedImages;
-            } else if (!editingId) {
-                window.imageMemoryDB[recordId] = [];
-            }
-
             if (editingId) {
                 currentRecords = currentRecords.map(rec => {
                     if (rec.id === recordId) {
@@ -478,7 +513,9 @@
                             state,
                             city,
                             rating,
-                            review
+                            review,
+                            // 새 사진이 있으면 가벼워진 데이터 적용, 없으면 백업 보존
+                            images: uploadedImages.length > 0 ? uploadedImages : existingImagesBackup
                         };
                     }
                     return rec;
@@ -494,7 +531,8 @@
                     state,
                     city,
                     rating,
-                    review
+                    review,
+                    images: uploadedImages // 이제 무제한 영구저장 가능!
                 };
                 currentRecords.unshift(newRecord);
                 alert('기록이 안전하게 저장되었습니다! 🎉');
@@ -506,18 +544,16 @@
             renderRecords();
         }
 
-        // 🌟 카테고리 탭 클릭 시 상태 변경 및 렌더링 함수
         function filterCategory(categoryName) {
             currentFilterCategory = categoryName;
             
-            // 버튼 활성화 스타일 교체
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if(categoryName === '전체') document.getElementById('tab-all').classList.add('active');
             if(categoryName === '음식') document.getElementById('tab-food').classList.add('active');
             if(categoryName === '관광지') document.getElementById('tab-sight').classList.add('active');
             if(categoryName === '숙소') document.getElementById('tab-stay').classList.add('active');
             
-            renderRecords(); // 필터 변경 후 리스트 재출력
+            renderRecords();
         }
 
         function renderRecords() {
@@ -526,7 +562,6 @@
 
             let records = JSON.parse(localStorage.getItem('travelRecords')) || [];
 
-            // 🌟 [추가된 필터 조건] 선택한 카테고리가 '전체'가 아니라면 해당 카테고리 글만 1차 선별
             if (currentFilterCategory !== '전체') {
                 records = records.filter(rec => rec.category === currentFilterCategory);
             }
@@ -588,7 +623,9 @@
                 card.classList.add('record-card');
 
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
-                const currentImages = window.imageMemoryDB[rec.id] || [];
+                
+                // 🌟 영구 저장된 이미지 배열 추출
+                const currentImages = rec.images || [];
 
                 let galleryHtml = '';
                 if(currentImages.length > 0) {
@@ -637,7 +674,7 @@
             const targetStar = document.getElementById(`star${target.rating}`);
             if(targetStar) targetStar.checked = true;
 
-            existingImagesBackup = window.imageMemoryDB[target.id] || [];
+            existingImagesBackup = target.images || [];
             const previewContainer = document.getElementById('image-preview');
             previewContainer.innerHTML = '';
             existingImagesBackup.forEach(imgSrc => {
@@ -683,7 +720,6 @@
                 const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
                 const updatedRecords = records.filter(rec => rec.id !== id);
                 localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
-                delete window.imageMemoryDB[id];
                 renderRecords();
             }
         }

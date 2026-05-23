@@ -46,15 +46,15 @@
     </main>
 
     <script type="module">
-        // 파이어베이스 모듈 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // ⭐️ 1단계에서 발급받은 한서님의 고유 파이어베이스 주소록 정보입니다.
+        // 🔗 한서님의 고유 파이어베이스 정보와 실시간 데이터베이스 주소가 결합된 설정입니다.
         const firebaseConfig = {
             apiKey: "AIzaSyCqDopsGReKPSqnwtZeHoHi86QmnzUtVSk",
             authDomain: "travel-blog-f0bdd.firebaseapp.com",
+            databaseURL: "https://travel-blog-f0bdd-default-rtdb.asia-southeast1.firebasedatabase.app/", 
             projectId: "travel-blog-f0bdd",
             storageBucket: "travel-blog-f0bdd.firebasestorage.app",
             messagingSenderId: "603563736434",
@@ -62,13 +62,12 @@
             measurementId: "G-YXB4924FB3"
         };
 
-        // 파이어베이스 시스템 가동
+        // 시스템 기동
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
         const provider = new GoogleAuthProvider();
 
-        // HTML 태그 가져오기
         const btnLogin = document.getElementById('btn-login');
         const authSection = document.getElementById('auth-section');
         const writeSection = document.getElementById('write-section');
@@ -77,11 +76,10 @@
 
         let currentUser = null;
 
-        // [기능 1] 로그인 상태 감지 및 화면 자동 전환
+        // 로그인 상태 감지
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                // 로그인 완료 시: 내비바에 프로필 표시 및 글쓰기 창 열기
                 authSection.innerHTML = `
                     <div class="flex items-center gap-3">
                         <img src="${user.photoURL}" class="w-8 h-8 rounded-full shadow">
@@ -90,25 +88,20 @@
                     </div>
                 `;
                 writeSection.classList.remove('hidden');
-
-                // 로그아웃 이벤트 연결
                 document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
             } else {
                 currentUser = null;
-                // 로그아웃 상태 시: 로그인 버튼만 노출하고 글쓰기 창 숨김
                 authSection.innerHTML = `<button id="btn-login-dynamic" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">구글 로그인</button>`;
                 writeSection.classList.add('hidden');
-                
                 document.getElementById('btn-login-dynamic').addEventListener('click', () => signInWithPopup(auth, provider));
             }
         });
 
-        // 초기 화면에 있는 기존 로그인 버튼에도 이벤트 연결
         if(btnLogin) {
             btnLogin.addEventListener('click', () => signInWithPopup(auth, provider));
         }
 
-        // [기능 2] 실시간 데이터베이스에 글 저장하기
+        // 글 저장 로직
         btnSubmit.addEventListener('click', () => {
             const title = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value.trim();
@@ -118,7 +111,6 @@
                 return;
             }
 
-            // 데이터베이스의 'posts' 폴더안에 글 오브젝트를 밀어넣습니다.
             push(ref(db, 'posts'), {
                 title: title,
                 content: content,
@@ -126,7 +118,6 @@
                 userPhoto: currentUser.photoURL,
                 createdAt: new Date().toLocaleString()
             }).then(() => {
-                // 저장 성공 시 입력창 초기화
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
                 alert('추억이 성공적으로 저장되었습니다! 🎉');
@@ -136,9 +127,9 @@
             });
         });
 
-        // [기능 3] 실시간으로 저장소에서 글 가져와서 화면에 그리기
+        // 글 불러오기 로직
         onValue(ref(db, 'posts'), (snapshot) => {
-            postList.innerHTML = ''; // 기존 목록 청소
+            postList.innerHTML = '';
             const data = snapshot.val();
 
             if (!data) {
@@ -146,7 +137,6 @@
                 return;
             }
 
-            // 최신 글이 맨 위로 올라오도록 정렬하여 화면에 배치
             const keys = Object.keys(data).reverse();
             keys.forEach(key => {
                 const post = data[key];

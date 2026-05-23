@@ -279,17 +279,16 @@
         
         <section id="form-page" class="page active">
             <h2 id="form-title" style="margin-bottom: 1.25rem; font-size: 1.4rem;">새로운 추억 남기기</h2>
-            <form id="travel-form" onsubmit="saveRecord(event)">
-                <input type="hidden" id="editing-id" value="">
+            <div id="travel-form"> <input type="hidden" id="editing-id" value="">
 
                 <div class="form-group">
                     <label>제목</label>
-                    <input type="text" id="title" placeholder="여행지의 제목을 적어주세요" required>
+                    <input type="text" id="title" placeholder="여행지의 제목을 적어주세요">
                 </div>
 
                 <div class="form-group">
                     <label>카테고리</label>
-                    <select id="category" required>
+                    <select id="category">
                         <option value="음식">🍕 음식</option>
                         <option value="관광지">⛰️ 관광지</option>
                         <option value="숙소">🏨 숙소</option>
@@ -299,16 +298,16 @@
                 <div class="form-group">
                     <label>위치 입력</label>
                     <div class="location-group">
-                        <input type="text" id="country" placeholder="국가 (예: 한국)" required>
-                        <input type="text" id="state" placeholder="도/주 (예: 강원도)" required>
-                        <input type="text" id="city" placeholder="시/군/구 (예: 철원군)" required>
+                        <input type="text" id="country" placeholder="국가 (예: 한국)">
+                        <input type="text" id="state" placeholder="도/주 (예: 강원도)">
+                        <input type="text" id="city" placeholder="시/군/구 (예: 철원군)">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>만족도</label>
                     <div class="rating">
-                        <input type="radio" name="rating" id="star5" value="5" required><label for="star5">★</label>
+                        <input type="radio" name="rating" id="star5" value="5"><label for="star5">★</label>
                         <input type="radio" name="rating" id="star4" value="4"><label for="star4">★</label>
                         <input type="radio" name="rating" id="star3" value="3"><label for="star3">★</label>
                         <input type="radio" name="rating" id="star2" value="2"><label for="star2">★</label>
@@ -325,12 +324,12 @@
 
                 <div class="form-group">
                     <label>느낀점</label>
-                    <textarea id="review" rows="4" placeholder="이번 여행은 어떠셨나요?" required></textarea>
+                    <textarea id="review" rows="4" placeholder="이번 여행은 어떠셨나요?"></textarea>
                 </div>
 
-                <button type="submit" id="btn-submit" class="btn-submit">저장하기</button>
+                <button type="button" id="btn-submit" class="btn-submit" onclick="saveRecord()">저장하기</button>
                 <button type="button" id="btn-cancel" class="btn-submit" style="background-color:#999; margin-top:0.5rem; display:none;" onclick="cancelEdit()">수정 취소</button>
-            </form>
+            </div>
         </section>
 
         <section id="list-page" class="page">
@@ -401,17 +400,24 @@
             return `${year}.${month}.${date} ${hours}:${minutes}`;
         }
 
-        function saveRecord(e) {
-            e.preventDefault();
-
+        // 🌟 새로고침 없이 안전하게 데이터를 로컬스토리지에 밀어 넣는 핵심 자바스크립트 함수
+        function saveRecord() {
             const editingId = document.getElementById('editing-id').value;
             const title = document.getElementById('title').value.trim();
             const category = document.getElementById('category').value;
             const country = document.getElementById('country').value.trim();
             const state = document.getElementById('state').value.trim();
             const city = document.getElementById('city').value.trim();
-            const rating = document.querySelector('input[name="rating"]:checked').value;
             const review = document.getElementById('review').value;
+            
+            const ratingChecked = document.querySelector('input[name="rating"]:checked');
+            const rating = ratingChecked ? ratingChecked.value : "5"; // 별점 미선택 시 기본 5점
+
+            // 필수값 검증 가드 코드
+            if (!title || !country || !state || !city || !review) {
+                alert('빈칸 없이 모두 입력해 주세요! 📝');
+                return;
+            }
 
             let currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
 
@@ -432,7 +438,7 @@
                     }
                     return rec;
                 });
-                alert('기록이 수정되었습니다!');
+                alert('기록이 수정되었습니다! ✨');
             } else {
                 const newRecord = {
                     id: Date.now(), 
@@ -446,22 +452,20 @@
                     review,
                     images: uploadedImages
                 };
-                // 🌟 버그 수정 핵심: 새 데이터를 배열의 맨 앞에 추가(unshift)해서 정렬 충돌 완벽 방지
-                currentRecords.unshift(newRecord); 
-                alert('기록이 저장되었습니다!');
+                currentRecords.unshift(newRecord);
+                alert('기록이 안전하게 저장되었습니다! 🎉');
             }
 
             localStorage.setItem('travelRecords', JSON.stringify(currentRecords));
             cancelEdit();
             switchPage('list-page');
-            renderRecords(); // 2페이지 리스트 갱신 함수 즉각 강제 실행
+            renderRecords(); // 강제로 즉시 화면 리렌더링
         }
 
         function renderRecords() {
             const container = document.getElementById('records-container');
             container.innerHTML = '';
 
-            // 로컬 스토리지 데이터 실시간 강제 동기화 추출
             let records = JSON.parse(localStorage.getItem('travelRecords')) || [];
 
             const sCountry = document.getElementById('search-country').value.trim().toLowerCase();
@@ -470,11 +474,9 @@
 
             let displayRecords = [];
 
-            // 1. 검색어가 아무것도 없을 때 -> 안전하게 최신순으로 정렬해서 전부 노출
             if (!sCountry && !sState && !sCity) {
                 displayRecords = [...records].sort((a, b) => b.id - a.id);
             } else {
-                // 2. 검색어가 입력되었을 때 -> 키워드 가중치 기반 정렬
                 let scoredRecords = [];
 
                 records.forEach(rec => {
@@ -537,83 +539,4 @@
 
                 card.innerHTML = `
                     <div class="card-top">
-                        <span class="card-category">${rec.category}</span>
-                        <span class="card-stars">${stars}</span>
-                    </div>
-                    <div class="card-title">${rec.title}</div>
-                    <div class="card-location">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
-                    <div class="card-date">📅 일시 : ${displayTime}</div>
-                    <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
-                    ${galleryHtml}
-                    <div class="card-actions">
-                        <button class="btn-action btn-edit" onclick="startEdit(${rec.id})">수정</button>
-                        <button class="btn-action btn-delete" onclick="deleteRecord(${rec.id})">삭제</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function startEdit(id) {
-            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
-            const target = records.find(rec => rec.id === id);
-
-            if (!target) return;
-
-            document.getElementById('editing-id').value = target.id;
-            document.getElementById('title').value = target.title;
-            document.getElementById('category').value = target.category;
-            document.getElementById('country').value = target.country;
-            document.getElementById('state').value = target.state;
-            document.getElementById('city').value = target.city;
-            document.getElementById('review').value = target.review;
-            
-            document.getElementById(`star${target.rating}`).checked = true;
-
-            existingImagesBackup = target.images || [];
-            const previewContainer = document.getElementById('image-preview');
-            previewContainer.innerHTML = '';
-            existingImagesBackup.forEach(imgSrc => {
-                const img = document.createElement('img');
-                img.src = imgSrc;
-                img.classList.add('preview-img');
-                previewContainer.appendChild(img);
-            });
-
-            document.getElementById('form-title').innerText = "📝 나의 추억 수정하기";
-            document.getElementById('btn-submit').innerText = "수정 완료";
-            document.getElementById('btn-cancel').style.display = "block";
-            document.getElementById('edit-photo-notice').style.display = "block";
-
-            switchPage('form-page');
-            window.scrollTo(0, 0);
-        }
-
-        function cancelEdit() {
-            document.getElementById('travel-form').reset();
-            document.getElementById('editing-id').value = '';
-            document.getElementById('image-preview').innerHTML = '';
-            uploadedImages = [];
-            existingImagesBackup = [];
-
-            document.getElementById('form-title').innerText = "새로운 추억 남기기";
-            document.getElementById('btn-submit').innerText = "저장하기";
-            document.getElementById('btn-cancel').style.display = "none";
-            document.getElementById('edit-photo-notice').style.display = "none";
-        }
-
-        function deleteRecord(id) {
-            if (confirm('정말로 이 여행 기록을 삭제하시겠습니까?')) {
-                const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
-                const updatedRecords = records.filter(rec => rec.id !== id);
-                localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
-                renderRecords();
-            }
-        }
-
-        window.onload = function() {
-            renderRecords();
-        }
-    </script>
-</body>
-</html>
+                        <span

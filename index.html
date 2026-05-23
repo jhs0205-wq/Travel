@@ -10,6 +10,8 @@
             --bg-color: #f5f7fa;
             --card-bg: #ffffff;
             --text-color: #333333;
+            --danger-color: #e74c3c;
+            --edit-color: #f39c12;
         }
 
         body {
@@ -64,7 +66,6 @@
             display: block;
         }
 
-        /* 1페이지: 기록 폼 */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -114,7 +115,6 @@
             color: #ffca28;
         }
 
-        /* 프리뷰 이미지 */
         .preview-container {
             display: flex;
             gap: 0.5rem;
@@ -141,7 +141,7 @@
             width: 100%;
         }
 
-        /* 2페이지: 기록 보기 & 검색 */
+        /* 2페이지: 검색창 */
         .search-box {
             background: var(--card-bg);
             padding: 1rem;
@@ -166,21 +166,21 @@
             cursor: pointer;
         }
 
-        /* 카드 카드 리스트 */
+        /* 카드 컴포넌트 */
         .record-card {
             background: var(--card-bg);
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
         }
 
-        .card-header {
+        .card-top {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
 
         .card-category {
@@ -197,10 +197,16 @@
             font-size: 1.2rem;
         }
 
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+        }
+
         .card-location {
             font-size: 0.9rem;
             color: #666;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
         .card-gallery {
@@ -222,24 +228,55 @@
         .card-img:hover {
             transform: scale(1.05);
         }
+
+        /* 수정/삭제 버튼 */
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 0.75rem;
+        }
+
+        .btn-action {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-edit { background-color: var(--edit-color); }
+        .btn-delete { background-color: var(--danger-color); }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>✈️ 나의 여행 기록장</h1>
+        <h1 id="main-title">✈️ 나의 여행 기록장</h1>
     </header>
 
     <nav>
-        <button id="nav-form" class="active" onclick="switchPage('form-page')">여행 기록하기</button>
+        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">여행 기록하기</button>
         <button id="nav-list" onclick="switchPage('list-page'); renderRecords();">추억 둘러보기</button>
     </nav>
 
     <div class="container">
         
-        <!-- 1페이지: 기록하기 -->
+        <!-- 1페이지: 기록 및 수정 폼 -->
         <section id="form-page" class="page active">
+            <h2 id="form-title" style="margin-bottom: 1.5rem;">새로운 추억 남기기</h2>
             <form id="travel-form" onsubmit="saveRecord(event)">
+                <!-- 수정 시 어떤 글인지 식별할 히든 ID -->
+                <input type="hidden" id="editing-id" value="">
+
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" id="title" placeholder="여행지의 강렬했던 첫인상을 적어주세요" required>
+                </div>
+
                 <div class="form-group">
                     <label>카테고리</label>
                     <select id="category" required>
@@ -253,8 +290,8 @@
                     <label>위치 입력</label>
                     <div class="location-group">
                         <input type="text" id="country" placeholder="국가 (예: 한국)" required>
-                        <input type="text" id="state" placeholder="도/주 (예: 경기도)" required>
-                        <input type="text" id="city" placeholder="시/군/구 (예: 남양주시)" required>
+                        <input type="text" id="state" placeholder="도/주 (예: 전북)" required>
+                        <input type="text" id="city" placeholder="시/군/구 (예: 전주시)" required>
                     </div>
                 </div>
 
@@ -273,6 +310,7 @@
                     <label>사진 업로드 (여러 장 가능)</label>
                     <input type="file" id="photos" accept="image/*" multiple onchange="previewImages(this)">
                     <div id="image-preview" class="preview-container"></div>
+                    <p id="edit-photo-notice" style="display:none; font-size:0.85rem; color:#888; margin-top:5px;">* 수정을 진행할 때 새 사진을 첨부하지 않으면 기존 사진이 그대로 유지됩니다.</p>
                 </div>
 
                 <div class="form-group">
@@ -280,7 +318,8 @@
                     <textarea id="review" rows="5" placeholder="이번 여행은 어떠셨나요? 자유롭게 적어보세요." required></textarea>
                 </div>
 
-                <button type="submit" class="btn-submit">저장하기</button>
+                <button type="submit" id="btn-submit" class="btn-submit">저장하기</button>
+                <button type="button" id="btn-cancel" class="btn-submit" style="background-color:#999; margin-top:0.5rem; display:none;" onclick="cancelEdit()">수정 취소</button>
             </form>
         </section>
 
@@ -290,31 +329,30 @@
                 <div class="search-inputs">
                     <div>
                         <label style="font-size:0.85rem;">국가 검색</label>
-                        <input type="text" id="search-country" placeholder="국가 입력">
+                        <input type="text" id="search-country" placeholder="국가 입력" onkeyup="renderRecords()">
                     </div>
                     <div>
                         <label style="font-size:0.85rem;">도 검색</label>
-                        <input type="text" id="search-state" placeholder="도 입력">
+                        <input type="text" id="search-state" placeholder="도 입력" onkeyup="renderRecords()">
                     </div>
                     <div>
                         <label style="font-size:0.85rem;">시 검색</label>
-                        <input type="text" id="search-city" placeholder="시 입력">
+                        <input type="text" id="search-city" placeholder="시 입력" onkeyup="renderRecords()">
                     </div>
                     <button class="btn-search" onclick="renderRecords()">검색</button>
                 </div>
             </div>
 
             <div id="records-container">
-                <!-- 여기에 자바스크립트로 카드가 생성됨 -->
+                <!-- 자바스크립트로 카드가 동적 생성되는 구역 -->
             </div>
         </section>
     </div>
 
     <script>
-        // 임시 이미지 Base64 스트링 배열 저장용
         let uploadedImages = [];
+        let existingImagesBackup = []; // 수정 시 이미지 유지용 백업
 
-        // 탭 전환 기능
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
@@ -324,7 +362,6 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
         }
 
-        // 이미지 여러장 프리뷰 및 데이터화
         function previewImages(input) {
             const previewContainer = document.getElementById('image-preview');
             previewContainer.innerHTML = '';
@@ -334,13 +371,10 @@
                 Array.from(input.files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // 프리뷰 이미지 생성
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.classList.add('preview-img');
                         previewContainer.appendChild(img);
-                        
-                        // 로컬스토리지 저장을 위해 배열에 Base64 주소 확보
                         uploadedImages.push(e.target.result);
                     }
                     reader.readAsDataURL(file);
@@ -348,10 +382,12 @@
             }
         }
 
-        // 데이터 저장하기
+        // 새 글 저장 및 기존 글 수정 통합 함수
         function saveRecord(e) {
             e.preventDefault();
 
+            const editingId = document.getElementById('editing-id').value;
+            const title = document.getElementById('title').value.trim();
             const category = document.getElementById('category').value;
             const country = document.getElementById('country').value.trim();
             const state = document.getElementById('state').value.trim();
@@ -359,45 +395,64 @@
             const rating = document.querySelector('input[name="rating"]:checked').value;
             const review = document.getElementById('review').value;
 
-            const newRecord = {
-                id: Date.now(),
-                category,
-                country,
-                state,
-                city,
-                rating,
-                review,
-                images: uploadedImages // 여러 장 저장 가능
-            };
+            let currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
 
-            // 기기 내 기존 데이터 가져와서 추가 후 재저장
-            const currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
-            currentRecords.unshift(newRecord); // 최신글이 위로 오게
+            if (editingId) {
+                // [수정 모드]
+                currentRecords = currentRecords.map(rec => {
+                    if (rec.id === parseInt(editingId)) {
+                        return {
+                            ...rec,
+                            title,
+                            category,
+                            country,
+                            state,
+                            city,
+                            rating,
+                            review,
+                            // 새 사진이 있으면 교체, 없으면 백업 데이터 유지
+                            images: uploadedImages.length > 0 ? uploadedImages : existingImagesBackup
+                        };
+                    }
+                    return rec;
+                });
+                alert('여행 기록이 성공적으로 수정되었습니다! ✨');
+            } else {
+                // [새 글 작성 모드]
+                const newRecord = {
+                    id: Date.now(),
+                    title,
+                    category,
+                    country,
+                    state,
+                    city,
+                    rating,
+                    review,
+                    images: uploadedImages
+                };
+                currentRecords.unshift(newRecord);
+                alert('여행 기록이 성공적으로 저장되었습니다! 🎉');
+            }
+
             localStorage.setItem('travelRecords', JSON.stringify(currentRecords));
-
-            alert('여행 기록이 성공적으로 저장되었습니다! 🎉');
             
-            // 폼 초기화 및 2페이지로 이동
-            document.getElementById('travel-form').reset();
-            document.getElementById('image-preview').innerHTML = '';
-            uploadedImages = [];
+            // 폼 초기화 및 페이지 리다이렉트
+            cancelEdit();
             switchPage('list-page');
             renderRecords();
         }
 
-        // 데이터 불러와서 화면에 뿌리기 (+ 검색 필터링)
+        // 2페이지 카드 생성 및 필터링
         function renderRecords() {
             const container = document.getElementById('records-container');
             container.innerHTML = '';
 
             const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
 
-            // 검색어 가져오기
             const sCountry = document.getElementById('search-country').value.trim().toLowerCase();
             const sState = document.getElementById('search-state').value.trim().toLowerCase();
             const sCity = document.getElementById('search-city').value.trim().toLowerCase();
 
-            // 필터링 필터 조건
             const filteredRecords = records.filter(rec => {
                 return (!sCountry || rec.country.toLowerCase().includes(sCountry)) &&
                        (!sState || rec.state.toLowerCase().includes(sState)) &&
@@ -409,15 +464,12 @@
                 return;
             }
 
-            // 카드 컴포넌트 렌더링
             filteredRecords.forEach(rec => {
                 const card = document.createElement('div');
                 card.classList.add('record-card');
 
-                // 별점 표시용 스트링 생성
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
 
-                // 이미지 갤러리 HTML 조립
                 let galleryHtml = '';
                 if(rec.images && rec.images.length > 0) {
                     galleryHtml = `<div class="card-gallery">`;
@@ -428,16 +480,86 @@
                 }
 
                 card.innerHTML = `
-                    <div class="card-header">
+                    <div class="card-top">
                         <span class="card-category">${rec.category}</span>
                         <span class="card-stars">${stars}</span>
                     </div>
+                    <div class="card-title">${rec.title}</div>
                     <div class="card-location">📍 ${rec.country} > ${rec.state} > ${rec.city}</div>
-                    <p style="white-space: pre-wrap; line-height:1.5;">${rec.review}</p>
+                    <p style="white-space: pre-wrap; line-height:1.5; margin: 0;">${rec.review}</p>
                     ${galleryHtml}
+                    <div class="card-actions">
+                        <button class="btn-action btn-edit" onclick="startEdit(${rec.id})">수정</button>
+                        <button class="btn-action btn-delete" onclick="deleteRecord(${rec.id})">삭제</button>
+                    </div>
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // 수정 모드 진입
+        function startEdit(id) {
+            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+            const target = records.find(rec => rec.id === id);
+
+            if (!target) return;
+
+            // 1페이지 폼에 기존 값들 채워넣기
+            document.getElementById('editing-id').value = target.id;
+            document.getElementById('title').value = target.title;
+            document.getElementById('category').value = target.category;
+            document.getElementById('country').value = target.country;
+            document.getElementById('state').value = target.state;
+            document.getElementById('city').value = target.city;
+            document.getElementById('review').value = target.review;
+            
+            // 별점 컴포넌트 체크 상태 변경
+            document.getElementById(`star${target.rating}`).checked = true;
+
+            // 이미지 백업 처리 및 기존 프리뷰 노출
+            existingImagesBackup = target.images || [];
+            const previewContainer = document.getElementById('image-preview');
+            previewContainer.innerHTML = '';
+            existingImagesBackup.forEach(imgSrc => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.classList.add('preview-img');
+                previewContainer.appendChild(img);
+            });
+
+            // UI 텍스트 변경 (수정 모드에 맞춤)
+            document.getElementById('form-title').innerText = "📝 나의 추억 수정하기";
+            document.getElementById('btn-submit').innerText = "수정 완료";
+            document.getElementById('btn-cancel').style.display = "block";
+            document.getElementById('edit-photo-notice').style.display = "block";
+
+            // 폼 페이지로 전환
+            switchPage('form-page');
+            window.scrollTo(0, 0);
+        }
+
+        // 수정 취소 및 폼 초기화
+        function cancelEdit() {
+            document.getElementById('travel-form').reset();
+            document.getElementById('editing-id').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            uploadedImages = [];
+            existingImagesBackup = [];
+
+            document.getElementById('form-title').innerText = "새로운 추억 남기기";
+            document.getElementById('btn-submit').innerText = "저장하기";
+            document.getElementById('btn-cancel').style.display = "none";
+            document.getElementById('edit-photo-notice').style.display = "none";
+        }
+
+        // 기록 삭제 기능
+        function deleteRecord(id) {
+            if (confirm('정말로 이 여행 기록을 삭제하시겠습니까? 😭')) {
+                const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+                const updatedRecords = records.filter(rec => rec.id !== id);
+                localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
+                renderRecords();
+            }
         }
     </script>
 </body>

@@ -17,7 +17,6 @@
             --tab-text: #4a5568;
         }
 
-        /* 🌟 4. 다크모드 테마 세팅 */
         [data-theme="dark"] {
             --bg-color: #1a202c;
             --card-bg: #2d3748;
@@ -45,7 +44,6 @@
             position: relative;
         }
 
-        /* 다크모드 토글 버튼 */
         .theme-toggle {
             position: absolute;
             right: 1rem;
@@ -62,8 +60,8 @@
         }
 
         nav {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
         }
@@ -71,11 +69,12 @@
         nav button {
             background: none;
             border: none;
-            padding: 1rem 2rem;
-            font-size: 1rem;
+            padding: 1rem 0;
+            font-size: 0.95rem;
             cursor: pointer;
             color: var(--text-color);
             transition: all 0.3s;
+            text-align: center;
         }
 
         nav button.active {
@@ -98,7 +97,6 @@
             display: block;
         }
 
-        /* 🌟 2. 통계 대시보드 스타일 */
         .stats-box {
             background: var(--card-bg);
             padding: 1rem;
@@ -150,17 +148,13 @@
             gap: 0.5rem;
         }
 
-        /* 별점 스타일 */
         .rating {
             display: flex;
             flex-direction: row-reverse;
             justify-content: flex-end;
         }
 
-        .rating input {
-            display: none;
-        }
-
+        .rating input { display: none; }
         .rating label {
             font-size: 2rem;
             color: #ccc;
@@ -168,12 +162,9 @@
             margin-bottom: 0;
             transition: color 0.2s;
         }
-
         .rating input:checked ~ label,
         .rating label:hover,
-        .rating label:hover ~ label {
-            color: #ffca28;
-        }
+        .rating label:hover ~ label { color: #ffca28; }
 
         .preview-container {
             display: grid;
@@ -201,7 +192,6 @@
             width: 100%;
         }
 
-        /* 검색 및 백업 구역 */
         .search-box {
             background: var(--card-bg);
             padding: 1rem;
@@ -233,7 +223,6 @@
             font-weight: bold;
         }
 
-        /* 🌟 1. 백업 버튼 스타일 */
         .backup-zone {
             display: flex;
             gap: 0.5rem;
@@ -254,7 +243,6 @@
             font-weight: bold;
         }
 
-        /* 카테고리 필터 탭 */
         .category-tabs {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -281,14 +269,13 @@
             box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3);
         }
 
-        /* 1열 카드 리스트 */
-        #records-container {
+        #records-container, #folder-container {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
 
-        .record-card {
+        .record-card, .folder-card {
             background: var(--card-bg);
             border-radius: 8px;
             padding: 1.25rem;
@@ -313,36 +300,12 @@
             font-weight: bold;
         }
 
-        .card-stars {
-            color: #ffca28;
-            font-size: 1.1rem;
-        }
+        .card-stars { color: #ffca28; font-size: 1.1rem; }
+        .card-title { font-size: 1.25rem; font-weight: bold; margin: 0.4rem 0; word-break: break-all; }
+        .card-location { font-size: 0.85rem; color: var(--text-color); opacity: 0.8; margin-bottom: 0.25rem; }
+        .card-date { font-size: 0.8rem; color: var(--text-color); opacity: 0.6; margin-bottom: 0.75rem; }
 
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin: 0.4rem 0;
-            word-break: break-all;
-        }
-
-        .card-location {
-            font-size: 0.85rem;
-            color: var(--text-color);
-            opacity: 0.8;
-            margin-bottom: 0.25rem;
-        }
-
-        .card-date {
-            font-size: 0.8rem;
-            color: var(--text-color);
-            opacity: 0.6;
-            margin-bottom: 0.75rem;
-        }
-
-        .card-link-box {
-            margin: 0.75rem 0;
-        }
-
+        .card-link-box { margin: 0.75rem 0; }
         .card-link {
             display: inline-flex;
             align-items: center;
@@ -401,6 +364,33 @@
             font-weight: bold;
             display: none;
         }
+
+        /* 🌟 3페이지 전용 멀티셀렉트 체크박스 리스트 스타일 */
+        .checkbox-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 4px;
+            background: var(--card-bg);
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+        .checkbox-item input { cursor: pointer; }
+
+        .folder-inner-card {
+            background: rgba(0,0,0,0.03);
+            border-left: 3px solid var(--primary-color);
+            padding: 0.5rem 0.75rem;
+            margin-top: 0.5rem;
+            border-radius: 0 4px 4px 0;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -411,8 +401,9 @@
     </header>
 
     <nav>
-        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">여행 기록하기</button>
-        <button id="nav-list" onclick="switchPage('list-page'); updateStatsAndRender();">추억 둘러보기</button>
+        <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">기록하기</button>
+        <button id="nav-list" onclick="switchPage('list-page'); updateStatsAndRender();">추억들</button>
+        <button id="nav-folder" onclick="switchPage('folder-page'); renderFolders();">여행 폴더</button>
     </nav>
 
     <div class="container">
@@ -485,7 +476,6 @@
         </section>
 
         <section id="list-page" class="page">
-            
             <div class="stats-box">
                 <div class="stat-item">
                     <span style="font-size:0.8rem; font-weight:bold;">총 추억 개수</span>
@@ -536,6 +526,32 @@
 
             <div id="records-container"></div>
         </section>
+
+        <section id="folder-page" class="page">
+            <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">🗂️ 여행 대분류 폴더 만들기</h2>
+            
+            <div class="search-box" style="margin-bottom: 2rem;">
+                <input type="hidden" id="editing-folder-id" value="">
+                
+                <div class="form-group">
+                    <label style="font-size:0.9rem;">여행 타이틀</label>
+                    <input type="text" id="folder-title" placeholder="예: 2박 3일 제주도 힐링 여행">
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-size:0.9rem;">이 폴더에 묶을 추억 선택 (2페이지 항목 연동)</label>
+                    <div id="folder-checkbox-list" class="checkbox-list">
+                        </div>
+                </div>
+                
+                <button type="button" id="btn-folder-submit" class="btn-submit" onclick="saveFolder()">폴더 생성하기</button>
+                <button type="button" id="btn-folder-cancel" class="btn-submit" style="background-color:#999; margin-top:0.5rem; display:none;" onclick="cancelFolderEdit()">취소</button>
+            </div>
+
+            <h2 style="font-size: 1.3rem; margin-bottom: 1rem;">나의 여행 폴더 목록</h2>
+            <div id="folder-container"></div>
+        </section>
+
     </div>
 
     <script>
@@ -543,7 +559,6 @@
         let existingImagesBackup = [];
         let currentFilterCategory = '전체';
 
-        // 페이지 진입 시 오늘 날짜 기본 지정 헬퍼
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('travel-date').value = today;
@@ -556,6 +571,10 @@
             document.getElementById(pageId).classList.add('active');
             if(pageId === 'form-page') document.getElementById('nav-form').classList.add('active');
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
+            if(pageId === 'folder-page') {
+                document.getElementById('nav-folder').classList.add('active');
+                loadFolderCheckboxes(); // 3페이지 열릴 때 체크박스 목록 동적 갱신
+            }
         }
 
         function processImages(input) {
@@ -591,7 +610,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(imgElement, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6); // 대용량 대비 압축률 세팅
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
 
                         const img = document.createElement('img');
                         img.src = compressedDataUrl;
@@ -614,7 +633,7 @@
             const editingId = document.getElementById('editing-id').value;
             const title = document.getElementById('title').value.trim();
             const category = document.getElementById('category').value;
-            const travelDate = document.getElementById('travel-date').value; // 수동 날짜 확보
+            const travelDate = document.getElementById('travel-date').value;
             const country = document.getElementById('country').value.trim();
             const state = document.getElementById('state').value.trim();
             const city = document.getElementById('city').value.trim();
@@ -625,7 +644,7 @@
             const rating = ratingChecked ? ratingChecked.value : "5";
 
             if (!title || !country || !state || !city || !review || !travelDate) {
-                alert('빈칸 없이 모두 입력해 주세요! (날짜 필수) 📝');
+                alert('빈칸 없이 모두 입력해 주세요! 📝');
                 return;
             }
 
@@ -639,7 +658,7 @@
                             ...rec,
                             title,
                             category,
-                            datetime: travelDate, // 수정 시 날짜 동기화
+                            datetime: travelDate,
                             country,
                             state,
                             city,
@@ -655,7 +674,7 @@
             } else {
                 const newRecord = {
                     id: recordId, 
-                    datetime: travelDate, // 사용자가 지정한 달력 연월일 대입
+                    datetime: travelDate,
                     title,
                     category,
                     country,
@@ -678,20 +697,16 @@
 
         function filterCategory(categoryName) {
             currentFilterCategory = categoryName;
-            
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             if(categoryName === '전체') document.getElementById('tab-all').classList.add('active');
             if(categoryName === '음식') document.getElementById('tab-food').classList.add('active');
             if(categoryName === '관광지') document.getElementById('tab-sight').classList.add('active');
             if(categoryName === '숙소') document.getElementById('tab-stay').classList.add('active');
-            
             renderRecords();
         }
 
-        // 🌟 2. 대시보드 통계 계산 및 화면 연동 통합 함수
         function updateStatsAndRender() {
             const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
-            
             const total = records.length;
             document.getElementById('stat-total').innerText = total + "개";
 
@@ -702,7 +717,6 @@
                 return;
             }
 
-            // 카테고리 빈도수 체크
             const counts = { '음식': 0, '관광지': 0, '숙소': 0 };
             let totalRating = 0;
             
@@ -716,8 +730,6 @@
             if(counts['숙소'] > counts[topCategory]) topCategory = '숙소';
             
             document.getElementById('stat-top-category').innerText = topCategory;
-
-            // 평균 만족도 점수 계산
             const avg = (totalRating / total).toFixed(1);
             document.getElementById('stat-avg-rating').innerText = "★ " + avg;
 
@@ -741,11 +753,9 @@
             let displayRecords = [];
 
             if (!sCountry && !sState && !sCity) {
-                // 🌟 3. 검색어 없을 때 사용자가 지정한 실제 여행 날짜 순 정렬 (최신순 정렬)
                 displayRecords = [...records].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
             } else {
                 let scoredRecords = [];
-
                 records.forEach(rec => {
                     let score = 0;
                     let hasMatch = false;
@@ -768,17 +778,13 @@
                             score += (rec.city.toLowerCase() === sCity) ? 100 : 10;
                         }
                     }
-
-                    if (hasMatch) {
-                        scoredRecords.push({ rec, score });
-                    }
+                    if (hasMatch) scoredRecords.push({ rec, score });
                 });
 
                 scoredRecords.sort((a, b) => {
                     if (b.score !== a.score) return b.score - a.score;
                     return new Date(b.rec.datetime) - new Date(a.rec.datetime);
                 });
-
                 displayRecords = scoredRecords.map(item => item.rec);
             }
 
@@ -790,21 +796,14 @@
             displayRecords.forEach(rec => {
                 const card = document.createElement('div');
                 card.classList.add('record-card');
-
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
                 const currentImages = rec.images || [];
 
                 let linkHtml = '';
                 if (rec.siteUrl) {
                     let formattedUrl = rec.siteUrl;
-                    if (!/^https?:\/\//i.test(formattedUrl)) {
-                        formattedUrl = 'https://' + formattedUrl;
-                    }
-                    linkHtml = `
-                        <div class="card-link-box">
-                            <a href="${formattedUrl}" target="_blank" class="card-link">🔗 관련 사이트 방문하기</a>
-                        </div>
-                    `;
+                    if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
+                    linkHtml = `<div class="card-link-box"><a href="${formattedUrl}" target="_blank" class="card-link">🔗 관련 사이트 방문하기</a></div>`;
                 }
 
                 let galleryHtml = '';
@@ -839,13 +838,12 @@
         function startEdit(id) {
             const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
             const target = records.find(rec => rec.id === id);
-
             if (!target) return;
 
             document.getElementById('editing-id').value = target.id;
             document.getElementById('title').value = target.title;
             document.getElementById('category').value = target.category;
-            document.getElementById('travel-date').value = target.datetime; // 수정 창에 날짜 채우기
+            document.getElementById('travel-date').value = target.datetime;
             document.getElementById('country').value = target.country;
             document.getElementById('state').value = target.state;
             document.getElementById('city').value = target.city;
@@ -876,7 +874,7 @@
 
         function cancelEdit() {
             document.getElementById('title').value = '';
-            setDefaultDate(); // 취소 시 날짜 오늘로 롤백
+            setDefaultDate();
             document.getElementById('country').value = '';
             document.getElementById('state').value = '';
             document.getElementById('city').value = '';
@@ -903,75 +901,238 @@
                 const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
                 const updatedRecords = records.filter(rec => rec.id !== id);
                 localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
+                
+                // 폴더 내부에 연결되어 있던 기록 매핑 해제 유실 방지 가드코드
+                let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+                folders = folders.map(f => ({
+                    ...f,
+                    recordIds: f.recordIds.filter(rid => rid !== id)
+                }));
+                localStorage.setItem('travelFolders', JSON.stringify(folders));
+
                 updateStatsAndRender();
             }
         }
 
-        // 🌟 1. 백업 데이터 파일 다운로드 기능 (.json 파일 생성)
+        // 백업 및 복구 기능
         function exportBackup() {
             const records = localStorage.getItem('travelRecords');
+            const folders = localStorage.getItem('travelFolders') || "[]";
             if(!records || records === "[]") {
-                alert('백업할 여행 데이터가 없습니다! 먼저 추억을 기록해 주세요. 🗺️');
+                alert('백업할 데이터가 없습니다.');
                 return;
             }
-            
-            const blob = new Blob([records], { type: 'application/json' });
+            // 폴더와 기록 통합 패키징 백업
+            const backupPackage = { records: JSON.parse(records), folders: JSON.parse(folders) };
+            const blob = new Blob([JSON.stringify(backupPackage)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `나의여행기록장_백업_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `나의여행기록장_통합백업_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
         }
 
-        // 🌟 1. 백업 파일 업로드 및 데이터 복구 기능
         function importBackup(input) {
             const file = input.files[0];
             if(!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
-                    if(Array.isArray(importedData)) {
-                        if(confirm('기존 기록에 합치시겠습니까? (취소를 누르면 기존 데이터가 삭제되고 백업파일로 덮어씌워집니다)')) {
-                            const current = JSON.parse(localStorage.getItem('travelRecords')) || [];
-                            const combined = [...importedData, ...current];
-                            // 중복 고유ID 제거 가드 코드
-                            const uniqueCombined = Array.from(new Map(combined.map(item => [item.id, item])).values());
-                            localStorage.setItem('travelRecords', JSON.stringify(uniqueCombined));
-                        } else {
-                            localStorage.setItem('travelRecords', JSON.stringify(importedData));
-                        }
-                        alert('데이터 복구가 성공적으로 완료되었습니다! 🎉');
-                        updateStatsAndRender();
-                    } else {
-                        alert('올바른 백업 파일 형식이 아닙니다. ❌');
-                    }
+                    const parsed = JSON.parse(e.target.result);
+                    // 구버전 및 신버전 호환성 예외처리 가드 코드
+                    let records = parsed.records ? parsed.records : (Array.isArray(parsed) ? parsed : []);
+                    let folders = parsed.folders ? parsed.folders : [];
+
+                    localStorage.setItem('travelRecords', JSON.stringify(records));
+                    localStorage.setItem('travelFolders', JSON.stringify(folders));
+                    alert('성공적으로 데이터를 전체 복구했습니다! 🎉');
+                    updateStatsAndRender();
                 } catch(err) {
-                    alert('파일을 읽는 중 오류가 발생했습니다. 다시 확인해 주세요.');
+                    alert('백업 파일 형식이 올바르지 않습니다.');
                 }
             };
             reader.readAsText(file);
-            input.value = ''; // 파일 리셋
+            input.value = '';
         }
 
-        // 🌟 4. 다크모드 테마 스위치 함수
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
             document.documentElement.setAttribute('data-theme', targetTheme);
             localStorage.setItem('travelTheme', targetTheme);
-            
             document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';
         }
 
-        // 페이지 최초 실행 시 초기화 초기화 구역
+
+        /* ==========================================================================
+           🌟 3페이지: 여행 폴더 (대분류) 관리 로직구역 코드 추가
+           ========================================================================== */
+        
+        // 폴더를 만들 때 고를 수 있게 2페이지 기록 항목들을 체크박스 리스트로 불러옴
+        function loadFolderCheckboxes() {
+            const checkboxListDiv = document.getElementById('folder-checkbox-list');
+            checkboxListDiv.innerHTML = '';
+            
+            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+            if(records.length === 0) {
+                checkboxListDiv.innerHTML = '<p style="font-size:0.85rem; color:#999; margin:0;">연동할 개별 추억 기록이 없습니다. 먼저 기록해 주세요!</p>';
+                return;
+            }
+
+            // 날짜 최신순 정렬해서 노출
+            records.sort((a,b) => new Date(b.datetime) - new Date(a.datetime)).forEach(rec => {
+                const itemLabel = document.createElement('label');
+                itemLabel.classList.add('checkbox-item');
+                itemLabel.innerHTML = `
+                    <input type="checkbox" name="folder-records" value="${rec.id}">
+                    <span>[${rec.datetime}] ${rec.title} (${rec.category})</span>
+                `;
+                checkboxListDiv.appendChild(itemLabel);
+            });
+        }
+
+        // 폴더 생성 및 수정 저장
+        function saveFolder() {
+            const folderIdInput = document.getElementById('editing-folder-id').value;
+            const folderTitle = document.getElementById('folder-title').value.trim();
+            
+            const checkedBoxes = document.querySelectorAll('input[name="folder-records"]:checked');
+            const recordIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+            if(!folderTitle) {
+                alert('여행 폴더 타이틀을 입력해 주세요! 🗂️');
+                return;
+            }
+
+            let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+            const currentId = folderIdInput ? parseInt(folderIdInput) : Date.now();
+
+            if(folderIdInput) {
+                // 수정 모드
+                folders = folders.map(f => {
+                    if(f.id === currentId) {
+                        return { ...f, title: folderTitle, recordIds: recordIds };
+                    }
+                    return f;
+                });
+                alert('여행 폴더가 수정되었습니다! 📂');
+            } else {
+                // 신규 생성 모드
+                const newFolder = {
+                    id: currentId,
+                    title: folderTitle,
+                    recordIds: recordIds
+                };
+                folders.unshift(newFolder);
+                alert('새로운 여행 폴더가 개설되었습니다! 🎉');
+            }
+
+            localStorage.setItem('travelFolders', JSON.stringify(folders));
+            cancelFolderEdit();
+            renderFolders();
+        }
+
+        // 폴더 목록 UI 렌더링
+        function renderFolders() {
+            const container = document.getElementById('folder-container');
+            container.innerHTML = '';
+
+            const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+
+            if(folders.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:2rem;">생성된 여행 분류 폴더가 없습니다. 🗂️</p>';
+                return;
+            }
+
+            folders.forEach(folder => {
+                const folderCard = document.createElement('div');
+                folderCard.classList.add('folder-card');
+
+                // 폴더 내부에 소속된 2페이지 기록물들 찾아내기
+                let innerItemsHtml = '';
+                let matchCount = 0;
+
+                folder.recordIds.forEach(rid => {
+                    const matchedRecord = records.find(r => r.id === rid);
+                    if(matchedRecord) {
+                        matchCount++;
+                        innerItemsHtml += `
+                            <div class="folder-inner-card">
+                                <strong>[${matchedRecord.category}] ${matchedRecord.title}</strong> - ${matchedRecord.datetime}<br>
+                                <span style="font-size:0.85rem; opacity:0.8;">📍 장소: ${matchedRecord.state} ${matchedRecord.city} | 만족도: ${'★'.repeat(matchedRecord.rating)}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                if(matchCount === 0) {
+                    innerItemsHtml = '<p style="font-size:0.85rem; color:#999; margin: 0.5rem 0 0 0;">📁 폴더 안에 포함된 추억이 없습니다.</p>';
+                }
+
+                folderCard.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:1.15rem; font-weight:bold; color:var(--primary-color);">📂 ${folder.title}</span>
+                        <span style="font-size:0.8rem; background:#e2e8f0; color:#333; padding:2px 6px; border-radius:10px;">기록 ${matchCount}개</span>
+                    </div>
+                    <div style="margin-top:0.75rem; margin-bottom:0.5rem;">
+                        ${innerItemsHtml}
+                    </div>
+                    <div class="card-actions" style="margin-top:0.5rem; padding-top:0.5rem;">
+                        <button class="btn-action btn-edit" onclick="startFolderEdit(${folder.id})">폴더수정</button>
+                        <button class="btn-action btn-delete" onclick="deleteFolder(${folder.id})">폴더삭제</button>
+                    </div>
+                `;
+                container.appendChild(folderCard);
+            });
+        }
+
+        // 폴더 수정 상태 진입
+        function startFolderEdit(id) {
+            const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+            const target = folders.find(f => f.id === id);
+            if(!target) return;
+
+            document.getElementById('editing-folder-id').value = target.id;
+            document.getElementById('folder-title').value = target.title;
+            
+            // 체크박스 리스트 새로 갈아끼운 뒤 기존 체크 정보 매핑하기
+            loadFolderCheckboxes();
+            
+            target.recordIds.forEach(rid => {
+                const cb = document.querySelector(`input[name="folder-records"][value="${rid}"]`);
+                if(cb) cb.checked = true;
+            });
+
+            document.getElementById('btn-folder-submit').innerText = "폴더 수정 완료";
+            document.getElementById('btn-folder-cancel').style.display = "block";
+            window.scrollTo(0, 0);
+        }
+
+        // 폴더 입력 폼 리셋
+        function cancelFolderEdit() {
+            document.getElementById('editing-folder-id').value = '';
+            document.getElementById('folder-title').value = '';
+            loadFolderCheckboxes();
+            document.getElementById('btn-folder-submit').innerText = "폴더 생성하기";
+            document.getElementById('btn-folder-cancel').style.display = "none";
+        }
+
+        // 폴더 삭제 (폴더만 지워지고 2페이지 원본 데이터는 보존됨)
+        function deleteFolder(id) {
+            if(confirm('이 여행 폴더를 삭제하시겠습니까?\n(폴더만 삭제되며 2페이지의 개별 추억글은 삭제되지 않습니다.)')) {
+                const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+                const filtered = folders.filter(f => f.id !== id);
+                localStorage.setItem('travelFolders', JSON.stringify(filtered));
+                renderFolders();
+            }
+        }
+
+
         window.onload = function() {
             setDefaultDate();
             
-            // 다크모드 기존 세팅값 체크 불러오기
             const savedTheme = localStorage.getItem('travelTheme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';

@@ -10,9 +10,21 @@
             --bg-color: #f5f7fa;
             --card-bg: #ffffff;
             --text-color: #333333;
+            --border-color: #ccc;
             --danger-color: #e74c3c;
             --edit-color: #f39c12;
-            --link-color: #2ecc71;
+            --tab-bg: #e2e8f0;
+            --tab-text: #4a5568;
+        }
+
+        /* 🌟 4. 다크모드 테마 세팅 */
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --card-bg: #2d3748;
+            --text-color: #edf2f7;
+            --border-color: #4a5568;
+            --tab-bg: #4a5568;
+            --tab-text: #edf2f7;
         }
 
         body {
@@ -21,6 +33,7 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         header {
@@ -29,13 +42,30 @@
             padding: 1rem;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* 다크모드 토글 버튼 */
+        .theme-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
         }
 
         nav {
             display: flex;
             justify-content: center;
-            background: #ffffff;
-            border-bottom: 1px solid #e1e4e8;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
         }
 
         nav button {
@@ -44,6 +74,7 @@
             padding: 1rem 2rem;
             font-size: 1rem;
             cursor: pointer;
+            color: var(--text-color);
             transition: all 0.3s;
         }
 
@@ -67,6 +98,32 @@
             display: block;
         }
 
+        /* 🌟 2. 통계 대시보드 스타일 */
+        .stats-box {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-val {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 0.25rem;
+        }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -77,12 +134,14 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="url"], select, textarea {
+        input[type="text"], input[type="url"], input[type="date"], select, textarea {
             width: 100%;
             padding: 0.75rem;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             box-sizing: border-box;
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
 
         .location-group {
@@ -128,7 +187,7 @@
             aspect-ratio: 1 / 1;
             object-fit: cover;
             border-radius: 4px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
         }
 
         button.btn-submit {
@@ -142,13 +201,14 @@
             width: 100%;
         }
 
-        /* 검색 영역 */
+        /* 검색 및 백업 구역 */
         .search-box {
             background: var(--card-bg);
             padding: 1rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
         }
 
         .search-inputs {
@@ -173,6 +233,27 @@
             font-weight: bold;
         }
 
+        /* 🌟 1. 백업 버튼 스타일 */
+        .backup-zone {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.75rem;
+        }
+
+        .btn-backup {
+            flex: 1;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         /* 카테고리 필터 탭 */
         .category-tabs {
             display: grid;
@@ -182,14 +263,14 @@
         }
 
         .tab-btn {
-            background: #e2e8f0;
+            background: var(--tab-bg);
             border: none;
             padding: 0.6rem 0.2rem;
             font-size: 0.85rem;
             font-weight: bold;
             border-radius: 20px;
             cursor: pointer;
-            color: #4a5568;
+            color: var(--tab-text);
             transition: all 0.2s;
             text-align: center;
         }
@@ -213,6 +294,7 @@
             padding: 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             box-sizing: border-box;
+            border: 1px solid var(--border-color);
         }
 
         .card-top {
@@ -245,17 +327,18 @@
 
         .card-location {
             font-size: 0.85rem;
-            color: #555;
+            color: var(--text-color);
+            opacity: 0.8;
             margin-bottom: 0.25rem;
         }
 
         .card-date {
             font-size: 0.8rem;
-            color: #999;
+            color: var(--text-color);
+            opacity: 0.6;
             margin-bottom: 0.75rem;
         }
 
-        /* 관련 사이트 링크 스타일 */
         .card-link-box {
             margin: 0.75rem 0;
         }
@@ -295,7 +378,7 @@
             justify-content: flex-end;
             gap: 0.5rem;
             margin-top: 1rem;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-color);
             padding-top: 0.75rem;
         }
 
@@ -324,11 +407,12 @@
 
     <header>
         <h1>✈️ 나의 여행 기록장</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙 다크 모드</button>
     </header>
 
     <nav>
         <button id="nav-form" class="active" onclick="cancelEdit(); switchPage('form-page')">여행 기록하기</button>
-        <button id="nav-list" onclick="switchPage('list-page'); renderRecords();">추억 둘러보기</button>
+        <button id="nav-list" onclick="switchPage('list-page'); updateStatsAndRender();">추억 둘러보기</button>
     </nav>
 
     <div class="container">
@@ -353,6 +437,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label>여행 다녀온 날짜</label>
+                    <input type="date" id="travel-date">
+                </div>
+
+                <div class="form-group">
                     <label>위치 입력</label>
                     <div class="location-group">
                         <input type="text" id="country" placeholder="국가 (예: 한국)">
@@ -363,7 +452,7 @@
 
                 <div class="form-group">
                     <label>관련 사이트 링크 (선택)</label>
-                    <input type="url" id="site-url" placeholder="https://example.com (참고한 링크나 주소를 넣어보세요)">
+                    <input type="url" id="site-url" placeholder="https://example.com (참고한 주소를 넣어보세요)">
                 </div>
 
                 <div class="form-group">
@@ -396,6 +485,22 @@
         </section>
 
         <section id="list-page" class="page">
+            
+            <div class="stats-box">
+                <div class="stat-item">
+                    <span style="font-size:0.8rem; font-weight:bold;">총 추억 개수</span>
+                    <span class="stat-val" id="stat-total">0개</span>
+                </div>
+                <div class="stat-item">
+                    <span style="font-size:0.8rem; font-weight:bold;">가장 많은 테마</span>
+                    <span class="stat-val" id="stat-top-category">-</span>
+                </div>
+                <div class="stat-item">
+                    <span style="font-size:0.8rem; font-weight:bold;">평균 만족도</span>
+                    <span class="stat-val" id="stat-avg-rating">★ 0.0</span>
+                </div>
+            </div>
+
             <div class="search-box">
                 <div class="search-inputs">
                     <div class="search-row">
@@ -414,6 +519,12 @@
                     </div>
                     <button class="btn-search" onclick="renderRecords()">검색</button>
                 </div>
+
+                <div class="backup-zone">
+                    <button class="btn-backup" onclick="exportBackup()">📥 데이터 컴퓨터에 백업</button>
+                    <button class="btn-backup" onclick="document.getElementById('import-file').click()">📤 백업파일로 복구</button>
+                    <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importBackup(this)">
+                </div>
             </div>
 
             <div class="category-tabs">
@@ -431,6 +542,12 @@
         let uploadedImages = [];
         let existingImagesBackup = [];
         let currentFilterCategory = '전체';
+
+        // 페이지 진입 시 오늘 날짜 기본 지정 헬퍼
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('travel-date').value = today;
+        }
 
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -474,7 +591,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(imgElement, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6); // 대용량 대비 압축률 세팅
 
                         const img = document.createElement('img');
                         img.src = compressedDataUrl;
@@ -493,31 +610,22 @@
             });
         }
 
-        function getCurrentDateTimeString() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const date = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            return `${year}.${month}.${date} ${hours}:${minutes}`;
-        }
-
         function saveRecord() {
             const editingId = document.getElementById('editing-id').value;
             const title = document.getElementById('title').value.trim();
             const category = document.getElementById('category').value;
+            const travelDate = document.getElementById('travel-date').value; // 수동 날짜 확보
             const country = document.getElementById('country').value.trim();
             const state = document.getElementById('state').value.trim();
             const city = document.getElementById('city').value.trim();
-            const siteUrl = document.getElementById('site-url').value.trim(); // 링크 값 확보
+            const siteUrl = document.getElementById('site-url').value.trim();
             const review = document.getElementById('review').value;
             
             const ratingChecked = document.querySelector('input[name="rating"]:checked');
             const rating = ratingChecked ? ratingChecked.value : "5";
 
-            if (!title || !country || !state || !city || !review) {
-                alert('빈칸 없이 모두 입력해 주세요! 📝');
+            if (!title || !country || !state || !city || !review || !travelDate) {
+                alert('빈칸 없이 모두 입력해 주세요! (날짜 필수) 📝');
                 return;
             }
 
@@ -531,10 +639,11 @@
                             ...rec,
                             title,
                             category,
+                            datetime: travelDate, // 수정 시 날짜 동기화
                             country,
                             state,
                             city,
-                            siteUrl, // 링크 데이터 수정 반영
+                            siteUrl,
                             rating,
                             review,
                             images: uploadedImages.length > 0 ? uploadedImages : existingImagesBackup
@@ -546,13 +655,13 @@
             } else {
                 const newRecord = {
                     id: recordId, 
-                    datetime: getCurrentDateTimeString(),
+                    datetime: travelDate, // 사용자가 지정한 달력 연월일 대입
                     title,
                     category,
                     country,
                     state,
                     city,
-                    siteUrl, // 링크 데이터 신규 추가
+                    siteUrl,
                     rating,
                     review,
                     images: uploadedImages
@@ -564,7 +673,7 @@
             localStorage.setItem('travelRecords', JSON.stringify(currentRecords));
             cancelEdit();
             switchPage('list-page');
-            renderRecords();
+            updateStatsAndRender();
         }
 
         function filterCategory(categoryName) {
@@ -576,6 +685,42 @@
             if(categoryName === '관광지') document.getElementById('tab-sight').classList.add('active');
             if(categoryName === '숙소') document.getElementById('tab-stay').classList.add('active');
             
+            renderRecords();
+        }
+
+        // 🌟 2. 대시보드 통계 계산 및 화면 연동 통합 함수
+        function updateStatsAndRender() {
+            const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
+            
+            const total = records.length;
+            document.getElementById('stat-total').innerText = total + "개";
+
+            if(total === 0) {
+                document.getElementById('stat-top-category').innerText = "-";
+                document.getElementById('stat-avg-rating').innerText = "★ 0.0";
+                renderRecords();
+                return;
+            }
+
+            // 카테고리 빈도수 체크
+            const counts = { '음식': 0, '관광지': 0, '숙소': 0 };
+            let totalRating = 0;
+            
+            records.forEach(rec => {
+                if(counts[rec.category] !== undefined) counts[rec.category]++;
+                totalRating += parseInt(rec.rating);
+            });
+
+            let topCategory = '음식';
+            if(counts['관광지'] > counts[topCategory]) topCategory = '관광지';
+            if(counts['숙소'] > counts[topCategory]) topCategory = '숙소';
+            
+            document.getElementById('stat-top-category').innerText = topCategory;
+
+            // 평균 만족도 점수 계산
+            const avg = (totalRating / total).toFixed(1);
+            document.getElementById('stat-avg-rating').innerText = "★ " + avg;
+
             renderRecords();
         }
 
@@ -596,7 +741,8 @@
             let displayRecords = [];
 
             if (!sCountry && !sState && !sCity) {
-                displayRecords = [...records].sort((a, b) => b.id - a.id);
+                // 🌟 3. 검색어 없을 때 사용자가 지정한 실제 여행 날짜 순 정렬 (최신순 정렬)
+                displayRecords = [...records].sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
             } else {
                 let scoredRecords = [];
 
@@ -630,7 +776,7 @@
 
                 scoredRecords.sort((a, b) => {
                     if (b.score !== a.score) return b.score - a.score;
-                    return b.rec.id - a.rec.id;
+                    return new Date(b.rec.datetime) - new Date(a.rec.datetime);
                 });
 
                 displayRecords = scoredRecords.map(item => item.rec);
@@ -648,10 +794,8 @@
                 const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
                 const currentImages = rec.images || [];
 
-                // 🌟 링크가 있을 때만 클릭 가능한 버튼식 HTML 조립
                 let linkHtml = '';
                 if (rec.siteUrl) {
-                    // 주소창에 http가 안 붙어있을 때 링크 작동오류를 방지하는 코드
                     let formattedUrl = rec.siteUrl;
                     if (!/^https?:\/\//i.test(formattedUrl)) {
                         formattedUrl = 'https://' + formattedUrl;
@@ -672,8 +816,6 @@
                     galleryHtml += `</div>`;
                 }
 
-                const displayTime = rec.datetime ? rec.datetime : new Date(rec.id).toLocaleString();
-
                 card.innerHTML = `
                     <div class="card-top">
                         <span class="card-category">${rec.category}</span>
@@ -681,8 +823,9 @@
                     </div>
                     <div class="card-title">${rec.title}</div>
                     <div class="card-location">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
-                    <div class="card-date">📅 일시 : ${displayTime}</div>
-                    ${linkHtml} <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
+                    <div class="card-date">📅 여행 날짜 : ${rec.datetime}</div>
+                    ${linkHtml}
+                    <p style="white-space: pre-wrap; line-height:1.5; margin: 0.5rem 0 0 0; font-size:0.95rem;">${rec.review}</p>
                     ${galleryHtml}
                     <div class="card-actions">
                         <button class="btn-action btn-edit" onclick="startEdit(${rec.id})">수정</button>
@@ -702,10 +845,11 @@
             document.getElementById('editing-id').value = target.id;
             document.getElementById('title').value = target.title;
             document.getElementById('category').value = target.category;
+            document.getElementById('travel-date').value = target.datetime; // 수정 창에 날짜 채우기
             document.getElementById('country').value = target.country;
             document.getElementById('state').value = target.state;
             document.getElementById('city').value = target.city;
-            document.getElementById('site-url').value = target.siteUrl || ''; // 수정 시 기존 링크 세팅
+            document.getElementById('site-url').value = target.siteUrl || '';
             document.getElementById('review').value = target.review;
             
             const targetStar = document.getElementById(`star${target.rating}`);
@@ -732,10 +876,11 @@
 
         function cancelEdit() {
             document.getElementById('title').value = '';
+            setDefaultDate(); // 취소 시 날짜 오늘로 롤백
             document.getElementById('country').value = '';
             document.getElementById('state').value = '';
             document.getElementById('city').value = '';
-            document.getElementById('site-url').value = ''; // 입력 폼 초기화
+            document.getElementById('site-url').value = '';
             document.getElementById('review').value = '';
             document.getElementById('photos').value = '';
             document.getElementById('editing-id').value = '';
@@ -758,12 +903,80 @@
                 const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
                 const updatedRecords = records.filter(rec => rec.id !== id);
                 localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
-                renderRecords();
+                updateStatsAndRender();
             }
         }
 
+        // 🌟 1. 백업 데이터 파일 다운로드 기능 (.json 파일 생성)
+        function exportBackup() {
+            const records = localStorage.getItem('travelRecords');
+            if(!records || records === "[]") {
+                alert('백업할 여행 데이터가 없습니다! 먼저 추억을 기록해 주세요. 🗺️');
+                return;
+            }
+            
+            const blob = new Blob([records], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `나의여행기록장_백업_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 🌟 1. 백업 파일 업로드 및 데이터 복구 기능
+        function importBackup(input) {
+            const file = input.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if(Array.isArray(importedData)) {
+                        if(confirm('기존 기록에 합치시겠습니까? (취소를 누르면 기존 데이터가 삭제되고 백업파일로 덮어씌워집니다)')) {
+                            const current = JSON.parse(localStorage.getItem('travelRecords')) || [];
+                            const combined = [...importedData, ...current];
+                            // 중복 고유ID 제거 가드 코드
+                            const uniqueCombined = Array.from(new Map(combined.map(item => [item.id, item])).values());
+                            localStorage.setItem('travelRecords', JSON.stringify(uniqueCombined));
+                        } else {
+                            localStorage.setItem('travelRecords', JSON.stringify(importedData));
+                        }
+                        alert('데이터 복구가 성공적으로 완료되었습니다! 🎉');
+                        updateStatsAndRender();
+                    } else {
+                        alert('올바른 백업 파일 형식이 아닙니다. ❌');
+                    }
+                } catch(err) {
+                    alert('파일을 읽는 중 오류가 발생했습니다. 다시 확인해 주세요.');
+                }
+            };
+            reader.readAsText(file);
+            input.value = ''; // 파일 리셋
+        }
+
+        // 🌟 4. 다크모드 테마 스위치 함수
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', targetTheme);
+            localStorage.setItem('travelTheme', targetTheme);
+            
+            document.getElementById('theme-btn').innerText = targetTheme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+        }
+
+        // 페이지 최초 실행 시 초기화 초기화 구역
         window.onload = function() {
-            renderRecords();
+            setDefaultDate();
+            
+            // 다크모드 기존 세팅값 체크 불러오기
+            const savedTheme = localStorage.getItem('travelTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+
+            updateStatsAndRender();
         }
     </script>
 </body>

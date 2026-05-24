@@ -132,7 +132,7 @@
             font-weight: bold;
         }
 
-        input[type="text"], input[type="url"], input[type="date"], select, textarea {
+        input[type="text"], input[type="url"], input[type="date"], input[type="number"], select, textarea {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid var(--border-color);
@@ -365,9 +365,9 @@
             display: none;
         }
 
-        /* 🌟 3페이지 전용 멀티셀렉트 체크박스 리스트 스타일 */
+        /* 체크박스 일차 설정 구역 스타일 */
         .checkbox-list {
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             padding: 0.5rem;
@@ -377,19 +377,55 @@
         .checkbox-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.4rem;
-            font-size: 0.9rem;
+            justify-content: space-between;
+            padding: 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
         }
-        .checkbox-item input { cursor: pointer; }
+        .checkbox-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .day-select {
+            width: 75px !important;
+            padding: 0.2rem !important;
+            font-size: 0.8rem;
+        }
 
-        .folder-inner-card {
-            background: rgba(0,0,0,0.03);
-            border-left: 3px solid var(--primary-color);
-            padding: 0.5rem 0.75rem;
-            margin-top: 0.5rem;
-            border-radius: 0 4px 4px 0;
-            font-size: 0.9rem;
+        /* 폴더 내부 카테고리 필터 스타일 */
+        .folder-tabs {
+            display: flex;
+            gap: 0.3rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+        }
+        .folder-tab-btn {
+            background: var(--tab-bg);
+            color: var(--tab-text);
+            border: none;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .folder-tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 일차별 컨테이너 */
+        .day-section {
+            margin-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 0.75rem;
+        }
+        .day-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--edit-color);
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -528,27 +564,32 @@
         </section>
 
         <section id="folder-page" class="page">
-            <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">🗂️ 여행 대분류 폴더 만들기</h2>
+            <h2 style="font-size: 1.4rem; margin-bottom: 1rem;">🗂️ 여행 폴더 개설 및 관리</h2>
             
             <div class="search-box" style="margin-bottom: 2rem;">
                 <input type="hidden" id="editing-folder-id" value="">
                 
                 <div class="form-group">
-                    <label style="font-size:0.9rem;">여행 타이틀</label>
-                    <input type="text" id="folder-title" placeholder="예: 2박 3일 제주도 힐링 여행">
+                    <label style="font-size:0.9rem;">여행 타이틀 (몇박몇일 어디 여행)</label>
+                    <input type="text" id="folder-title" placeholder="예: 2박 3일 강원도 철원 여행">
+                </div>
+
+                <div class="form-group">
+                    <label style="font-size:0.9rem;">여행 총평</label>
+                    <textarea id="folder-summary" rows="3" placeholder="이번 여행 전체의 총평과 요약을 적어보세요."></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label style="font-size:0.9rem;">이 폴더에 묶을 추억 선택 (2페이지 항목 연동)</label>
+                    <label style="font-size:0.9rem;">추억 연결 및 일차 설정</label>
                     <div id="folder-checkbox-list" class="checkbox-list">
                         </div>
                 </div>
                 
-                <button type="button" id="btn-folder-submit" class="btn-submit" onclick="saveFolder()">폴더 생성하기</button>
+                <button type="button" id="btn-folder-submit" class="btn-submit" onclick="saveFolder()">폴더 저장하기</button>
                 <button type="button" id="btn-folder-cancel" class="btn-submit" style="background-color:#999; margin-top:0.5rem; display:none;" onclick="cancelFolderEdit()">취소</button>
             </div>
 
-            <h2 style="font-size: 1.3rem; margin-bottom: 1rem;">나의 여행 폴더 목록</h2>
+            <h2 style="font-size: 1.3rem; margin-bottom: 1rem;">나의 여행 폴더 리스트</h2>
             <div id="folder-container"></div>
         </section>
 
@@ -558,6 +599,9 @@
         let uploadedImages = [];
         let existingImagesBackup = [];
         let currentFilterCategory = '전체';
+        
+        // 🌟 각 폴더별로 현재 선택된 내부 카테고리 필터 상태 저장 객체
+        let folderTabStates = {}; 
 
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
@@ -573,7 +617,7 @@
             if(pageId === 'list-page') document.getElementById('nav-list').classList.add('active');
             if(pageId === 'folder-page') {
                 document.getElementById('nav-folder').classList.add('active');
-                loadFolderCheckboxes(); // 3페이지 열릴 때 체크박스 목록 동적 갱신
+                loadFolderCheckboxes();
             }
         }
 
@@ -789,7 +833,7 @@
             }
 
             if(displayRecords.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#999; margin-top:3rem;">[${currentFilterCategory}] 조건에 맞는 여행 기록이 없습니다. 🗺️</p>`;
+                container.innerHTML = `<p style="text-align:center; color:#999; margin-top:3rem;">[${currentFilterCategory}] 조건에 맞는 여행 기록이 없습니다. 🗺️</p>';
                 return;
             }
 
@@ -902,11 +946,10 @@
                 const updatedRecords = records.filter(rec => rec.id !== id);
                 localStorage.setItem('travelRecords', JSON.stringify(updatedRecords));
                 
-                // 폴더 내부에 연결되어 있던 기록 매핑 해제 유실 방지 가드코드
                 let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
                 folders = folders.map(f => ({
                     ...f,
-                    recordIds: f.recordIds.filter(rid => rid !== id)
+                    mappings: f.mappings ? f.mappings.filter(m => m.recordId !== id) : []
                 }));
                 localStorage.setItem('travelFolders', JSON.stringify(folders));
 
@@ -914,7 +957,6 @@
             }
         }
 
-        // 백업 및 복구 기능
         function exportBackup() {
             const records = localStorage.getItem('travelRecords');
             const folders = localStorage.getItem('travelFolders') || "[]";
@@ -922,7 +964,6 @@
                 alert('백업할 데이터가 없습니다.');
                 return;
             }
-            // 폴더와 기록 통합 패키징 백업
             const backupPackage = { records: JSON.parse(records), folders: JSON.parse(folders) };
             const blob = new Blob([JSON.stringify(backupPackage)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -940,7 +981,6 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    // 구버전 및 신버전 호환성 예외처리 가드 코드
                     let records = parsed.records ? parsed.records : (Array.isArray(parsed) ? parsed : []);
                     let folders = parsed.folders ? parsed.folders : [];
 
@@ -966,66 +1006,76 @@
 
 
         /* ==========================================================================
-           🌟 3페이지: 여행 폴더 (대분류) 관리 로직구역 코드 추가
+           🌟 3페이지: 여행 폴더 (일차 분할 / 카테고리 분류 / 총평) 고도화 구역
            ========================================================================== */
         
-        // 폴더를 만들 때 고를 수 있게 2페이지 기록 항목들을 체크박스 리스트로 불러옴
+        // 폴더 등록용 체크박스 및 일차(1일차, 2일차...) 통합 제어 매핑 로드
         function loadFolderCheckboxes() {
             const checkboxListDiv = document.getElementById('folder-checkbox-list');
             checkboxListDiv.innerHTML = '';
             
             const records = JSON.parse(localStorage.getItem('travelRecords')) || [];
             if(records.length === 0) {
-                checkboxListDiv.innerHTML = '<p style="font-size:0.85rem; color:#999; margin:0;">연동할 개별 추억 기록이 없습니다. 먼저 기록해 주세요!</p>';
+                checkboxListDiv.innerHTML = '<p style="font-size:0.85rem; color:#999; margin:0;">연동할 개별 추억 기록이 없습니다.</p>';
                 return;
             }
 
-            // 날짜 최신순 정렬해서 노출
             records.sort((a,b) => new Date(b.datetime) - new Date(a.datetime)).forEach(rec => {
-                const itemLabel = document.createElement('label');
-                itemLabel.classList.add('checkbox-item');
-                itemLabel.innerHTML = `
-                    <input type="checkbox" name="folder-records" value="${rec.id}">
-                    <span>[${rec.datetime}] ${rec.title} (${rec.category})</span>
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('checkbox-item');
+                itemDiv.innerHTML = `
+                    <div class="checkbox-item-left">
+                        <input type="checkbox" name="folder-records" value="${rec.id}" id="cb-${rec.id}">
+                        <label for="cb-${rec.id}">[${rec.datetime}] ${rec.title}</label>
+                    </div>
+                    <div>
+                        <input type="number" class="day-select" id="day-${rec.id}" min="1" value="1"> <span style="font-size:0.75rem;">일차</span>
+                    </div>
                 `;
-                checkboxListDiv.appendChild(itemLabel);
+                checkboxListDiv.appendChild(itemDiv);
             });
         }
 
-        // 폴더 생성 및 수정 저장
+        // 폴더 저장 기능 (제목 + 총평 + 일차 포함 맵 구조 데이터베이스 구조화)
         function saveFolder() {
             const folderIdInput = document.getElementById('editing-folder-id').value;
             const folderTitle = document.getElementById('folder-title').value.trim();
+            const folderSummary = document.getElementById('folder-summary').value.trim(); // 총평
             
             const checkedBoxes = document.querySelectorAll('input[name="folder-records"]:checked');
-            const recordIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
-
+            
             if(!folderTitle) {
-                alert('여행 폴더 타이틀을 입력해 주세요! 🗂️');
+                alert('여행 폴더 제목을 입력해 주세요! 🗂️');
                 return;
             }
+
+            // 각 연동 기록마다 설정한 일차(Day) 매핑 배열 생성
+            const mappings = Array.from(checkedBoxes).map(cb => {
+                const recordId = parseInt(cb.value);
+                const dayValue = parseInt(document.getElementById(`day-${recordId}`).value) || 1;
+                return { recordId, day: dayValue };
+            });
 
             let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
             const currentId = folderIdInput ? parseInt(folderIdInput) : Date.now();
 
             if(folderIdInput) {
-                // 수정 모드
                 folders = folders.map(f => {
                     if(f.id === currentId) {
-                        return { ...f, title: folderTitle, recordIds: recordIds };
+                        return { ...f, title: folderTitle, summary: folderSummary, mappings: mappings };
                     }
                     return f;
                 });
                 alert('여행 폴더가 수정되었습니다! 📂');
             } else {
-                // 신규 생성 모드
                 const newFolder = {
                     id: currentId,
                     title: folderTitle,
-                    recordIds: recordIds
+                    summary: folderSummary,
+                    mappings: mappings
                 };
                 folders.unshift(newFolder);
-                alert('새로운 여행 폴더가 개설되었습니다! 🎉');
+                alert('새로운 여행 폴더가 생성되었습니다! 🎉');
             }
 
             localStorage.setItem('travelFolders', JSON.stringify(folders));
@@ -1033,7 +1083,13 @@
             renderFolders();
         }
 
-        // 폴더 목록 UI 렌더링
+        // 폴더 탭 클릭 제어기 함수
+        function changeFolderTab(folderId, category) {
+            folderTabStates[folderId] = category;
+            renderFolders(); // 리렌더링하여 탭 상태 반영
+        }
+
+        // 3페이지 여행 폴더 내부 목록 그리기 (카테고리 분리 탭 + 일차별 소팅 + 2페이지 스타일 카드 피드 연동)
         function renderFolders() {
             const container = document.getElementById('folder-container');
             container.innerHTML = '';
@@ -1047,39 +1103,120 @@
             }
 
             folders.forEach(folder => {
+                // 폴더의 현재 내부 카테고리 탭 상태 세팅 (기본값: 전체)
+                if (!folderTabStates[folder.id]) {
+                    folderTabStates[folder.id] = '전체';
+                }
+                const activeSubTab = folderTabStates[folder.id];
+
                 const folderCard = document.createElement('div');
                 folderCard.classList.add('folder-card');
 
-                // 폴더 내부에 소속된 2페이지 기록물들 찾아내기
-                let innerItemsHtml = '';
-                let matchCount = 0;
+                // 1. 총평 HTML 빌드
+                let summaryHtml = '';
+                if(folder.summary) {
+                    summaryHtml = `
+                        <div style="background: rgba(74,144,226,0.06); padding: 0.75rem; border-radius:6px; margin: 0.75rem 0; font-size:0.9rem; border-left:4px solid var(--primary-color);">
+                            <div style="font-weight:bold; margin-bottom:0.25rem;">📝 여행 총평</div>
+                            <div style="white-space:pre-wrap; opacity:0.9;">${folder.summary}</div>
+                        </div>
+                    `;
+                }
 
-                folder.recordIds.forEach(rid => {
-                    const matchedRecord = records.find(r => r.id === rid);
-                    if(matchedRecord) {
-                        matchCount++;
-                        innerItemsHtml += `
-                            <div class="folder-inner-card">
-                                <strong>[${matchedRecord.category}] ${matchedRecord.title}</strong> - ${matchedRecord.datetime}<br>
-                                <span style="font-size:0.85rem; opacity:0.8;">📍 장소: ${matchedRecord.state} ${matchedRecord.city} | 만족도: ${'★'.repeat(matchedRecord.rating)}</span>
-                            </div>
-                        `;
+                // 2. 내부 소속 기록 데이터 로드 및 1차 카테고리 필터링
+                let targetMappings = folder.mappings || [];
+                let matchedRecordsWithDay = [];
+
+                targetMappings.forEach(mapItem => {
+                    const foundRec = records.find(r => r.id === mapItem.recordId);
+                    if(foundRec) {
+                        // 서브 탭 카테고리 매칭 필터 검증
+                        if(activeSubTab === '전체' || foundRec.category === activeSubTab) {
+                            matchedRecordsWithDay.push({ rec: foundRec, day: mapItem.day });
+                        }
                     }
                 });
 
-                if(matchCount === 0) {
-                    innerItemsHtml = '<p style="font-size:0.85rem; color:#999; margin: 0.5rem 0 0 0;">📁 폴더 안에 포함된 추억이 없습니다.</p>';
+                // 3. 일차별(Day 1 -> Day 2 -> Day 3...) 오름차순 그룹화 정렬
+                matchedRecordsWithDay.sort((a, b) => a.day - b.day);
+
+                // 일차별로 그룹 묶기
+                let dayGroups = {};
+                matchedRecordsWithDay.forEach(item => {
+                    if(!dayGroups[item.day]) dayGroups[item.day] = [];
+                    dayGroups[item.day].push(item.rec);
+                });
+
+                // 4. 그룹화된 일차별 카드 UI 조립
+                let daySectionsHtml = '';
+                const keys = Object.keys(dayGroups).sort((a,b) => a-b);
+
+                if(keys.length === 0) {
+                    daySectionsHtml = `<p style="font-size:0.85rem; color:#999; text-align:center; margin:1.5rem 0;">이 카테고리에 해당하는 기록물이 없습니다.</p>`;
+                } else {
+                    keys.forEach(day => {
+                        daySectionsHtml += `<div class="day-section"><div class="day-title">📅 ${day}일차</div>`;
+                        
+                        dayGroups[day].forEach(rec => {
+                            const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
+                            const currentImages = rec.images || [];
+
+                            let linkHtml = '';
+                            if (rec.siteUrl) {
+                                let formattedUrl = rec.siteUrl;
+                                if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
+                                linkHtml = `<div class="card-link-box" style="margin:0.4rem 0;"><a href="${formattedUrl}" target="_blank" class="card-link" style="font-size:0.75rem; padding:0.2rem 0.5rem;">🔗 사이트</a></div>`;
+                            }
+
+                            let galleryHtml = '';
+                            if(currentImages.length > 0) {
+                                galleryHtml = `<div class="card-gallery" style="gap:0.3rem; margin-top:0.4rem;">`;
+                                currentImages.forEach(imgSrc => {
+                                    galleryHtml += `<img src="${imgSrc}" class="card-img" onclick="window.open('${imgSrc}')" alt="여행사진">`;
+                                });
+                                galleryHtml += `</div>`;
+                            }
+
+                            // 2페이지 레이아웃 그대로 축소 이식 미러링 구조화
+                            daySectionsHtml += `
+                                <div class="record-card" style="margin-bottom:0.75rem; padding:1rem; box-shadow:none; background:rgba(0,0,0,0.02);">
+                                    <div class="card-top">
+                                        <span class="card-category" style="font-size:0.75rem; padding:1px 4px;">${rec.category}</span>
+                                        <span class="card-stars" style="font-size:0.9rem;">${stars}</span>
+                                    </div>
+                                    <div class="card-title" style="font-size:1.05rem;">${rec.title}</div>
+                                    <div class="card-location" style="font-size:0.8rem; margin-bottom:0.1rem;">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
+                                    <div class="card-date" style="font-size:0.75rem; margin-bottom:0.4rem;">📅 날짜 : ${rec.datetime}</div>
+                                    ${linkHtml}
+                                    <p style="white-space: pre-wrap; line-height:1.4; margin: 0.25rem 0 0 0; font-size:0.85rem;">${rec.review}</p>
+                                    ${galleryHtml}
+                                </div>
+                            `;
+                        });
+
+                        daySectionsHtml += `</div>`;
+                    });
                 }
 
+                // 폴더 메인 템플릿 결합 출력
                 folderCard.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:1.15rem; font-weight:bold; color:var(--primary-color);">📂 ${folder.title}</span>
-                        <span style="font-size:0.8rem; background:#e2e8f0; color:#333; padding:2px 6px; border-radius:10px;">기록 ${matchCount}개</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--primary-color); padding-bottom:0.5rem;">
+                        <span style="font-size:1.2rem; font-weight:bold; color:var(--primary-color);">📂 ${folder.title}</span>
+                        <span style="font-size:0.8rem; background:var(--primary-color); color:white; padding:2px 8px; border-radius:10px;">총 ${targetMappings.length}개</span>
                     </div>
-                    <div style="margin-top:0.75rem; margin-bottom:0.5rem;">
-                        ${innerItemsHtml}
+                    
+                    ${summaryHtml} <div class="folder-tabs">
+                        <button class="folder-tab-btn ${activeSubTab === '전체' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '전체')">전체보기</button>
+                        <button class="folder-tab-btn ${activeSubTab === '음식' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '음식')">🍕 음식</button>
+                        <button class="folder-tab-btn ${activeSubTab === '관광지' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '관광지')">⛰️ 관광지</button>
+                        <button class="folder-tab-btn ${activeSubTab === '숙소' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '숙소')">🏨 숙소</button>
                     </div>
-                    <div class="card-actions" style="margin-top:0.5rem; padding-top:0.5rem;">
+
+                    <div style="margin-top:0.5rem;">
+                        ${daySectionsHtml}
+                    </div>
+
+                    <div class="card-actions" style="margin-top:0.75rem; padding-top:0.5rem;">
                         <button class="btn-action btn-edit" onclick="startFolderEdit(${folder.id})">폴더수정</button>
                         <button class="btn-action btn-delete" onclick="deleteFolder(${folder.id})">폴더삭제</button>
                     </div>
@@ -1088,7 +1225,6 @@
             });
         }
 
-        // 폴더 수정 상태 진입
         function startFolderEdit(id) {
             const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
             const target = folders.find(f => f.id === id);
@@ -1096,13 +1232,18 @@
 
             document.getElementById('editing-folder-id').value = target.id;
             document.getElementById('folder-title').value = target.title;
+            document.getElementById('folder-summary').value = target.summary || ''; // 총평 불러오기
             
-            // 체크박스 리스트 새로 갈아끼운 뒤 기존 체크 정보 매핑하기
             loadFolderCheckboxes();
             
-            target.recordIds.forEach(rid => {
-                const cb = document.querySelector(`input[name="folder-records"][value="${rid}"]`);
+            // 기존에 저장된 매핑(기록ID + 일차) 정보 복원시키기
+            const currentMappings = target.mappings || [];
+            currentMappings.forEach(mapItem => {
+                const cb = document.getElementById(`cb-${mapItem.recordId}`);
                 if(cb) cb.checked = true;
+                
+                const dayInput = document.getElementById(`day-${mapItem.recordId}`);
+                if(dayInput) dayInput.value = mapItem.day;
             });
 
             document.getElementById('btn-folder-submit').innerText = "폴더 수정 완료";
@@ -1110,25 +1251,23 @@
             window.scrollTo(0, 0);
         }
 
-        // 폴더 입력 폼 리셋
         function cancelFolderEdit() {
             document.getElementById('editing-folder-id').value = '';
             document.getElementById('folder-title').value = '';
+            document.getElementById('folder-summary').value = '';
             loadFolderCheckboxes();
-            document.getElementById('btn-folder-submit').innerText = "폴더 생성하기";
+            document.getElementById('btn-folder-submit').innerText = "폴더 저장하기";
             document.getElementById('btn-folder-cancel').style.display = "none";
         }
 
-        // 폴더 삭제 (폴더만 지워지고 2페이지 원본 데이터는 보존됨)
         function deleteFolder(id) {
-            if(confirm('이 여행 폴더를 삭제하시겠습니까?\n(폴더만 삭제되며 2페이지의 개별 추억글은 삭제되지 않습니다.)')) {
+            if(confirm('이 여행 폴더를 삭제하시겠습니까?\n(폴더 정보와 총평만 삭제되며 원본 추억글은 그대로 보존됩니다.)')) {
                 const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
                 const filtered = folders.filter(f => f.id !== id);
                 localStorage.setItem('travelFolders', JSON.stringify(filtered));
                 renderFolders();
             }
         }
-
 
         window.onload = function() {
             setDefaultDate();
@@ -1142,3 +1281,4 @@
     </script>
 </body>
 </html>
+ 

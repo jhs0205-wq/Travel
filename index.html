@@ -223,7 +223,6 @@
             font-weight: bold;
         }
 
-        /* 백업 구역 스타일 확장 */
         .backup-zone {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -366,8 +365,9 @@
             display: none;
         }
 
+        /* 체크박스 설정 설정 구역 스타일 */
         .checkbox-list {
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             border: 1px solid var(--border-color);
             padding: 0.5rem;
@@ -376,21 +376,27 @@
         }
         .checkbox-item {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.4rem;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0.6rem;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.85rem;
         }
-        .checkbox-item-left {
+        .checkbox-item-top {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .day-select {
-            width: 75px !important;
+        .checkbox-item-settings {
+            display: flex;
+            gap: 0.5rem;
+            padding-left: 1.5rem;
+        }
+        .day-select, .meal-select {
             padding: 0.2rem !important;
             font-size: 0.8rem;
+            height: auto !important;
+            width: auto !important;
         }
 
         .folder-tabs {
@@ -426,7 +432,32 @@
             margin-bottom: 0.5rem;
         }
 
-        /* 🌟 추출 코드 전용 박스 스타일 */
+        /* 🌟 음식 서브 타이틀 테마 디자인 */
+        .meal-group-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 0.5rem 0 0.25rem 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        /* 🌟 순서 변경용 소형 화살표 버튼 그룹 */
+        .order-btn-zone {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .btn-order-arrow {
+            background: var(--tab-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 0.1rem 0.4rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         .extractor-box {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -464,7 +495,7 @@
 
                 <div class="form-group">
                     <label>카테고리</label>
-                    <select id="category">
+                    <select id="category" onchange="toggleFormMealLabel()">
                         <option value="음식">🍕 음식</option>
                         <option value="관광지">⛰️ 관광지</option>
                         <option value="숙소">🏨 숙소</option>
@@ -586,8 +617,8 @@
                 <input type="hidden" id="editing-folder-id" value="">
                 
                 <div class="form-group">
-                    <label style="font-size:0.9rem;">旅行 타이틀 (몇박몇일 어디 여행)</label>
-                    <input type="text" id="folder-title" placeholder="예: 2박 3일 강원도 철원 여행">
+                    <label style="font-size:0.9rem;">여행 타이틀 (몇박몇일 어디 여행)</label>
+                    <input type="text" id="folder-title" placeholder="예: 1박 2일 부대 개방행사 여행">
                 </div>
 
                 <div class="form-group">
@@ -596,7 +627,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label style="font-size:0.9rem;">추억 연결 및 일차 설정</label>
+                    <label style="font-size:0.9rem;">추억 연결 및 일차/식사 설정</label>
                     <div id="folder-checkbox-list" class="checkbox-list"></div>
                 </div>
                 
@@ -619,6 +650,10 @@
         function setDefaultDate() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('travel-date').value = today;
+        }
+
+        function toggleFormMealLabel() {
+            // 구조 일관성 유지를 위해 함수 형태 정의만 보존
         }
 
         function switchPage(pageId) {
@@ -970,7 +1005,6 @@
             }
         }
 
-        // 파일 기반 통합 백업
         function exportBackup() {
             const records = localStorage.getItem('travelRecords');
             const folders = localStorage.getItem('travelFolders') || "[]";
@@ -1010,11 +1044,6 @@
             input.value = '';
         }
 
-        /* ==========================================================================
-           🌟 4. 원격 전송용 텍스트 코드 추출 / 원격 추출기 주입 로직 구역 추가
-           ========================================================================== */
-        
-        // 텍스트 코드로 전체 뽑아내기
         function toggleExtractor() {
             const panel = document.getElementById('extractor-panel');
             const textarea = document.getElementById('extractor-textarea');
@@ -1025,13 +1054,11 @@
             const folders = localStorage.getItem('travelFolders') || "[]";
 
             if(records === "[]" && folders === "[]") {
-                alert('추출할 데이터가 존재하지 않습니다! 먼저 기록을 작성해 주세요.');
+                alert('추출할 데이터가 존재하지 않습니다!');
                 return;
             }
 
             const backupPackage = { records: JSON.parse(records), folders: JSON.parse(folders) };
-            
-            // 전송용 Base64 암호화 텍스트 문자열 코드로 변환
             const stringCode = btoa(encodeURIComponent(JSON.stringify(backupPackage)));
 
             textarea.value = stringCode;
@@ -1042,15 +1069,17 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        // 추출된 텍스트 코드 클립보드 원터치 복사
+        document.addEventListener('copy', function(e) {
+            // 구조 안전성 확보용 이벤트 선언 유지
+        });
+
         function copyExtractorText() {
             const textarea = document.getElementById('extractor-textarea');
             textarea.select();
             document.execCommand('copy');
-            alert('데이터 전송 코드가 클립보드에 복사되었습니다! 📋\n다른 깃허브 사이트의 [추출 코드로 원격 주입] 창에 붙여넣으세요.');
+            alert('데이터 전송 코드가 클립보드에 복사되었습니다! 📋');
         }
 
-        // 다른 사이트에서 추출된 텍스트 코드를 수동으로 주입받는 창 열기
         function injectTextCode() {
             const panel = document.getElementById('extractor-panel');
             const textarea = document.getElementById('extractor-textarea');
@@ -1065,7 +1094,6 @@
             panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         }
 
-        // 원격 텍스트 코드 해석 후 로컬 스토리지 강제 다이렉트 주입
         function executeInjection() {
             const code = document.getElementById('extractor-textarea').value.trim();
             if(!code) {
@@ -1074,12 +1102,11 @@
             }
 
             try {
-                // Base64 복호화 가동
                 const decodedData = JSON.parse(decodeURIComponent(atob(code)));
                 let records = decodedData.records || [];
                 let folders = decodedData.folders || [];
 
-                if(confirm('기존 사이트에 있던 기록에 합치시겠습니까?\n(확인: 기존 데이터 유지 후 병합, 취소: 기존 데이터 삭제 후 새 데이터로 전면 교체)')) {
+                if(confirm('기존 사이트에 있던 기록에 합치시겠습니까?')) {
                     const currentRecords = JSON.parse(localStorage.getItem('travelRecords')) || [];
                     const combinedRecords = [...records, ...currentRecords];
                     const uniqueRecords = Array.from(new Map(combinedRecords.map(item => [item.id, item])).values());
@@ -1094,18 +1121,20 @@
                     localStorage.setItem('travelFolders', JSON.stringify(folders));
                 }
 
-                alert('다른 깃허브의 소중한 기록이 실시간으로 원격 주입 완료되었습니다! ⚡🎉');
+                alert('기록 주입 완료! ⚡🎉');
                 document.getElementById('extractor-panel').style.display = 'none';
                 updateStatsAndRender();
             } catch(err) {
-                alert('코드가 유실되었거나 올바르지 않은 마이그레이션 암호 코드입니다. ❌');
+                alert('올바르지 않은 마이그레이션 암호 코드입니다.');
             }
         }
 
 
         /* ==========================================================================
-           3페이지: 여행 폴더 관련 함수
+           3페이지: 여행 폴더 관련 제어 함수 (수정 보완 / 음식 아침,점심,저녁 필터 확장)
            ========================================================================== */
+        
+        // 🌟 음식 '아침/점심/저녁/일반' 및 일차 다중 매핑 체크박스 생성
         function loadFolderCheckboxes() {
             const checkboxListDiv = document.getElementById('folder-checkbox-list');
             checkboxListDiv.innerHTML = '';
@@ -1119,19 +1148,41 @@
             records.sort((a,b) => new Date(b.datetime) - new Date(a.datetime)).forEach(rec => {
                 const itemDiv = document.createElement('div');
                 itemDiv.classList.add('checkbox-item');
+                
+                // 음식 카테고리일 때만 식사 때 타임 바인딩 노출
+                let mealSelectHtml = '';
+                if(rec.category === '음식') {
+                    mealSelectHtml = `
+                        <select class="meal-select" id="meal-${rec.id}">
+                            <option value="일반">🍴 일반</option>
+                            <option value="아침">🌅 아침</option>
+                            <option value="점심">☀️ 점심</option>
+                            <option value="저녁">🌙 저녁</option>
+                        </select>
+                    `;
+                } else {
+                    mealSelectHtml = `<input type="hidden" id="meal-${rec.id}" value="일반">`;
+                }
+
                 itemDiv.innerHTML = `
-                    <div class="checkbox-item-left">
+                    <div class="checkbox-item-top">
                         <input type="checkbox" name="folder-records" value="${rec.id}" id="cb-${rec.id}">
-                        <label for="cb-${rec.id}">[${rec.datetime}] ${rec.title}</label>
+                        <label for="cb-${rec.id}">[${rec.category}] ${rec.title}</label>
                     </div>
-                    <div>
-                        <input type="number" class="day-select" id="day-${rec.id}" min="1" value="1"> <span style="font-size:0.75rem;">일차</span>
+                    <div class="checkbox-item-settings">
+                        <div>
+                            <input type="number" class="day-select" id="day-${rec.id}" min="1" value="1"> <span style="font-size:0.75rem; margin-right:8px;">일차</span>
+                        </div>
+                        <div>
+                            ${mealSelectHtml}
+                        </div>
                     </div>
                 `;
                 checkboxListDiv.appendChild(itemDiv);
             });
         }
 
+        // 폴더 정보 저장 (신규 개설 및 수정을 하나의 유기적 맵으로 처리)
         function saveFolder() {
             const folderIdInput = document.getElementById('editing-folder-id').value;
             const folderTitle = document.getElementById('folder-title').value.trim();
@@ -1144,24 +1195,28 @@
                 return;
             }
 
+            // 개별 노드 요소 데이터 취합
             const mappings = Array.from(checkedBoxes).map(cb => {
                 const recordId = parseInt(cb.value);
                 const dayValue = parseInt(document.getElementById(`day-${recordId}`).value) || 1;
-                return { recordId, day: dayValue };
+                const mealValue = document.getElementById(`meal-${recordId}`).value;
+                return { recordId, day: dayValue, meal: mealValue };
             });
 
             let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
             const currentId = folderIdInput ? parseInt(folderIdInput) : Date.now();
 
             if(folderIdInput) {
+                // 🌟 [수정 모드]: 기존 리스트 위치 그대로 보존하면서 덮어쓰기
                 folders = folders.map(f => {
                     if(f.id === currentId) {
                         return { ...f, title: folderTitle, summary: folderSummary, mappings: mappings };
                     }
                     return f;
                 });
-                alert('여행 폴더가 수정되었습니다! 📂');
+                alert('여행 폴더 내용이 성공적으로 수정되었습니다! 📂');
             } else {
+                // 신규 생성 모드
                 const newFolder = {
                     id: currentId,
                     title: folderTitle,
@@ -1169,7 +1224,7 @@
                     mappings: mappings
                 };
                 folders.unshift(newFolder);
-                alert('새로운 여행 폴더가 생성되었습니다! 🎉');
+                alert('새로운 여행 폴더가 개설되었습니다! 🎉');
             }
 
             localStorage.setItem('travelFolders', JSON.stringify(folders));
@@ -1182,6 +1237,28 @@
             renderFolders();
         }
 
+        // 🌟 카드의 우선순위 순서(순번)를 런타임에서 강제로 올려주거나 내리는 오더 체인 스왑 함수
+        function moveOrder(folderId, recordId, direction) {
+            let folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
+            let folder = folders.find(f => f.id === folderId);
+            if(!folder) return;
+
+            let idx = folder.mappings.findIndex(m => m.recordId === recordId);
+            if(idx === -1) return;
+
+            let targetIdx = idx + direction;
+            if(targetIdx < 0 || targetIdx >= folder.mappings.length) return; // 범위를 벗어나면 예외 차단
+
+            // 맵 구조 내 요소 맞교환 스왑(Swap) 진행
+            let temp = folder.mappings[idx];
+            folder.mappings[idx] = folder.mappings[targetIdx];
+            folder.mappings[targetIdx] = temp;
+
+            localStorage.setItem('travelFolders', JSON.stringify(folders));
+            renderFolders(); // 순서 변경 즉각 반영
+        }
+
+        // 3페이지 여행 폴더 출력 (아침/점심/저녁 필터링 및 순서 임의 조정 화살표 기능 연동)
         function renderFolders() {
             const container = document.getElementById('folder-container');
             container.innerHTML = '';
@@ -1220,63 +1297,51 @@
                     const foundRec = records.find(r => r.id === mapItem.recordId);
                     if(foundRec) {
                         if(activeSubTab === '전체' || foundRec.category === activeSubTab) {
-                            matchedRecordsWithDay.push({ rec: foundRec, day: mapItem.day });
+                            matchedRecordsWithDay.push({ rec: foundRec, day: mapItem.day, meal: mapItem.meal || '일반' });
                         }
                     }
                 });
 
-                matchedRecordsWithDay.sort((a, b) => a.day - b.day);
-
+                // 일차(Day) 기준 1차 그룹화
                 let dayGroups = {};
                 matchedRecordsWithDay.forEach(item => {
                     if(!dayGroups[item.day]) dayGroups[item.day] = [];
-                    dayGroups[item.day].push(item.rec);
+                    dayGroups[item.day].push(item);
                 });
 
                 let daySectionsHtml = '';
-                const keys = Object.keys(dayGroups).sort((a,b) => a-b);
+                const sortedDays = Object.keys(dayGroups).sort((a,b) => a-b);
 
-                if(keys.length === 0) {
-                    daySectionsHtml = `<p style="font-size:0.85rem; color:#999; text-align:center; margin:1.5rem 0;">이 카테고리에 해당하는 기록물이 없습니다.</p>`;
+                if(sortedDays.length === 0) {
+                    daySectionsHtml = `<p style="font-size:0.85rem; color:#999; text-align:center; margin:1.5rem 0;">이 테마에 묶인 기록이 존재하지 않습니다.</p>`;
                 } else {
-                    keys.forEach(day => {
+                    sortedDays.forEach(day => {
                         daySectionsHtml += `<div class="day-section"><div class="day-title">📅 ${day}일차</div>`;
                         
-                        dayGroups[day].forEach(rec => {
-                            const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
-                            const currentImages = rec.images || [];
+                        let currentDayItems = dayGroups[day];
 
-                            let linkHtml = '';
-                            if (rec.siteUrl) {
-                                let formattedUrl = rec.siteUrl;
-                                if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
-                                linkHtml = `<div class="card-link-box" style="margin:0.4rem 0;"><a href="${formattedUrl}" target="_blank" class="card-link" style="font-size:0.75rem; padding:0.2rem 0.5rem;">🔗 사이트</a></div>`;
-                            }
+                        // 🌟 음식 카테고리가 활성화된 경우에만 아침 -> 점심 -> 저녁 세부 그룹핑 레이아웃 구축
+                        if(activeSubTab === '음식') {
+                            const mealOrders = ['아침', '점심', '저녁', '일반'];
+                            
+                            mealOrders.forEach(mealType => {
+                                let mealItems = currentDayItems.filter(item => item.meal === mealType);
+                                if(mealItems.length > 0) {
+                                    let icon = mealType === '아침' ? '🌅' : mealType === '점심' ? '☀️' : mealType === '저녁' ? '🌙' : '🍴';
+                                    daySectionsHtml += `<div class="meal-group-title">${icon} ${mealType} 식사</div>`;
+                                    
+                                    mealItems.forEach(item => {
+                                        daySectionsHtml += buildFolderCardInnerHtml(item.rec, folder.id);
+                                    });
+                                }
+                            });
+                        } else {
+                            // 일반 모드 (관광지, 숙소, 전체보기)일 때는 맵에 정의된 순서대로 즉시 출력
+                            currentDayItems.forEach(item => {
+                                daySectionsHtml += buildFolderCardInnerHtml(item.rec, folder.id);
+                            });
+                        }
 
-                            let galleryHtml = '';
-                            if(currentImages.length > 0) {
-                                galleryHtml = `<div class="card-gallery" style="gap:0.3rem; margin-top:0.4rem;">`;
-                                currentImages.forEach(imgSrc => {
-                                    galleryHtml += `<img src="${imgSrc}" class="card-img" onclick="window.open('${imgSrc}')" alt="여행사진">`;
-                                });
-                                galleryHtml += `</div>`;
-                            }
-
-                            daySectionsHtml += `
-                                <div class="record-card" style="margin-bottom:0.75rem; padding:1rem; box-shadow:none; background:rgba(0,0,0,0.02);">
-                                    <div class="card-top">
-                                        <span class="card-category" style="font-size:0.75rem; padding:1px 4px;">${rec.category}</span>
-                                        <span class="card-stars" style="font-size:0.9rem;">${stars}</span>
-                                    </div>
-                                    <div class="card-title" style="font-size:1.05rem;">${rec.title}</div>
-                                    <div class="card-location" style="font-size:0.8rem; margin-bottom:0.1rem;">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
-                                    <div class="card-date" style="font-size:0.75rem; margin-bottom:0.4rem;">📅 날짜 : ${rec.datetime}</div>
-                                    ${linkHtml}
-                                    <p style="white-space: pre-wrap; line-height:1.4; margin: 0.25rem 0 0 0; font-size:0.85rem;">${rec.review}</p>
-                                    ${galleryHtml}
-                                </div>
-                            `;
-                        });
                         daySectionsHtml += `</div>`;
                     });
                 }
@@ -1291,7 +1356,7 @@
 
                     <div class="folder-tabs">
                         <button class="folder-tab-btn ${activeSubTab === '전체' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '전체')">전체보기</button>
-                        <button class="folder-tab-btn ${activeSubTab === '음식' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '음식')">🍕 음식</button>
+                        <button class="folder-tab-btn ${activeSubTab === '음식' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '음식')">🍕 음식 분할</button>
                         <button class="folder-tab-btn ${activeSubTab === '관광지' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '관광지')">⛰️ 관광지</button>
                         <button class="folder-tab-btn ${activeSubTab === '숙소' ? 'active' : ''}" onclick="changeFolderTab(${folder.id}, '숙소')">🏨 숙소</button>
                     </div>
@@ -1301,14 +1366,55 @@
                     </div>
 
                     <div class="card-actions" style="margin-top:0.75rem; padding-top:0.5rem;">
-                        <button class="btn-action btn-edit" onclick="startFolderEdit(${folder.id})">폴더수정</button>
-                        <button class="btn-action btn-delete" onclick="deleteFolder(${folder.id})">폴더삭제</button>
+                        <button class="btn-action btn-edit" onclick="startFolderEdit(${folder.id})">폴더 수정</button>
+                        <button class="btn-action btn-delete" onclick="deleteFolder(${folder.id})">폴더 삭제</button>
                     </div>
                 `;
                 container.appendChild(folderCard);
             });
         }
 
+        // 🌟 내부 미러링 카드 컴포넌트 빌더 코드 추출분리 (+ 순서 제어용 화살표 연동)
+        function buildFolderCardInnerHtml(rec, folderId) {
+            const stars = '★'.repeat(rec.rating) + '☆'.repeat(5 - rec.rating);
+            const currentImages = rec.images || [];
+
+            let linkHtml = '';
+            if (rec.siteUrl) {
+                let formattedUrl = rec.siteUrl;
+                if (!/^https?:\/\//i.test(formattedUrl)) formattedUrl = 'https://' + formattedUrl;
+                linkHtml = `<div class="card-link-box" style="margin:0.4rem 0;"><a href="${formattedUrl}" target="_blank" class="card-link" style="font-size:0.75rem; padding:0.2rem 0.5rem;">🔗 사이트</a></div>`;
+            }
+
+            let galleryHtml = '';
+            if(currentImages.length > 0) {
+                galleryHtml = `<div class="card-gallery" style="gap:0.3rem; margin-top:0.4rem;">`;
+                currentImages.forEach(imgSrc => {
+                    galleryHtml += `<img src="${imgSrc}" class="card-img" onclick="window.open('${imgSrc}')" alt="여행사진">`;
+                });
+                galleryHtml += `</div>`;
+            }
+
+            return `
+                <div class="record-card" style="margin-bottom:0.75rem; padding:1rem; box-shadow:none; background:rgba(0,0,0,0.02);">
+                    <div class="card-top">
+                        <span class="card-category" style="font-size:0.75rem; padding:1px 4px;">${rec.category}</span>
+                        <div class="order-btn-zone">
+                            <button class="btn-order-arrow" onclick="moveOrder(${folderId}, ${rec.id}, -1)">▲</button>
+                            <button class="btn-order-arrow" onclick="moveOrder(${folderId}, ${rec.id}, 1)">▼</button>
+                        </div>
+                    </div>
+                    <div class="card-title" style="font-size:1.05rem; margin-top:0.25rem;">${rec.title}</div>
+                    <div class="card-location" style="font-size:0.8rem; margin-bottom:0.1rem;">📍 장소 : ${rec.country} > ${rec.state} > ${rec.city}</div>
+                    <div class="card-date" style="font-size:0.75rem; margin-bottom:0.4rem;">📅 날짜 : ${rec.datetime}</div>
+                    ${linkHtml}
+                    <p style="white-space: pre-wrap; line-height:1.4; margin: 0.25rem 0 0 0; font-size:0.85rem;">${rec.review}</p>
+                    ${galleryHtml}
+                </div>
+            `;
+        }
+
+        // 🌟 폴더 수정 모드 진입 완벽 보완 처리
         function startFolderEdit(id) {
             const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
             const target = folders.find(f => f.id === id);
@@ -1327,11 +1433,17 @@
                 
                 const dayInput = document.getElementById(`day-${mapItem.recordId}`);
                 if(dayInput) dayInput.value = mapItem.day;
+
+                const mealSelect = document.getElementById(`meal-${mapItem.recordId}`);
+                if(mealSelect && mapItem.meal) mealSelect.value = mapItem.meal;
             });
 
-            document.getElementById('btn-folder-submit').innerText = "폴더 수정 완료";
+            // UI 스위칭
+            document.getElementById('btn-folder-submit').innerText = "폴더 내용 수정완료";
             document.getElementById('btn-folder-cancel').style.display = "block";
-            window.scrollTo(0, 0);
+            
+            // 입력 상단 구역으로 부드럽게 스크롤
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function cancelFolderEdit() {
@@ -1344,7 +1456,7 @@
         }
 
         function deleteFolder(id) {
-            if(confirm('이 여행 폴더를 삭제하시겠습니까?')) {
+            if(confirm('이 여행 폴더를 삭제하시겠습니까?\n(폴더 정보와 총평만 삭제되며 원본 추억글은 그대로 보존됩니다.)')) {
                 const folders = JSON.parse(localStorage.getItem('travelFolders')) || [];
                 const filtered = folders.filter(f => f.id !== id);
                 localStorage.setItem('travelFolders', JSON.stringify(filtered));
